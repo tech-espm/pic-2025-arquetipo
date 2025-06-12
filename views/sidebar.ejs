@@ -29,6 +29,21 @@
 	</li>
 	<% } %>
 
+	<% if (usuario.admin || usuario.diretor) { %>
+	<li class="nav-item">
+		<a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseDepartamentos" aria-expanded="true" aria-controls="collapseDepartamentos">
+			<i class="fas fa-fw fa-building"></i>
+			<span>Departamentos</span>
+		</a>
+		<div id="collapseDepartamentos" class="collapse" data-parent="#accordionSidebar">
+			<div class="bg-white py-2 collapse-inner rounded">
+				<a class="collapse-item" href="<%- root %>/departamento/criar">Criar</a>
+				<a class="collapse-item" href="<%- root %>/departamento/listar">Gerenciar</a>
+			</div>
+		</div>
+	</li>
+	<% } %>
+
 	<hr class="sidebar-divider">
 
 	<div class="sidebar-heading">

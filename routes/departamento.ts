@@ -1,21 +1,18 @@
 ﻿import app = require("teem");
-import perfis = require("../models/perfil");
-import Usuario = require("../models/usuario");
 import Departamento = require("../models/departamento");
+import Usuario = require("../models/usuario");
 
-class UsuarioRoute {
+class DepartamentoRoute {
 	public static async criar(req: app.Request, res: app.Response) {
 		let u = await Usuario.cookie(req);
 		if (!u || !u.admin)
 			res.redirect(app.root + "/acesso");
 		else
-			res.render("usuario/editar", {
-				titulo: "Criar Usuário",
+			res.render("departamento/editar", {
+				titulo: "Criar Departamento",
 				textoSubmit: "Criar",
 				usuario: u,
 				item: null,
-				perfis: perfis.lista,
-				departamentos: await Departamento.listarCombo(),
 			});
 	}
 
@@ -25,19 +22,17 @@ class UsuarioRoute {
 			res.redirect(app.root + "/acesso");
 		} else {
 			let id = parseInt(req.query["id"] as string);
-			let item: Usuario = null;
-			if (isNaN(id) || !(item = await Usuario.obter(id)))
+			let item: Departamento = null;
+			if (isNaN(id) || !(item = await Departamento.obter(id)))
 				res.render("index/nao-encontrado", {
 					layout: "layout-sem-form",
 					usuario: u
 				});
 			else
-				res.render("usuario/editar", {
-					titulo: "Editar Usuário",
+				res.render("departamento/editar", {
+					titulo: "Editar Departamento",
 					usuario: u,
 					item: item,
-					perfis: perfis.lista,
-					departamentos: await Departamento.listarCombo(),
 				});
 		}
 	}
@@ -47,15 +42,15 @@ class UsuarioRoute {
 		if (!u || !u.admin)
 			res.redirect(app.root + "/acesso");
 		else
-			res.render("usuario/listar", {
+			res.render("departamento/listar", {
 				layout: "layout-tabela",
-				titulo: "Gerenciar Usuários",
+				titulo: "Gerenciar Departamentos",
 				datatables: true,
 				xlsx: true,
 				usuario: u,
-				lista: await Usuario.listar()
+				lista: await Departamento.listar()
 			});
 	}
 }
 
-export = UsuarioRoute;
+export = DepartamentoRoute;

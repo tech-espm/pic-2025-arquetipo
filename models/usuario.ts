@@ -13,15 +13,17 @@ interface Usuario {
 	nome: string;
 	idperfil: Perfil;
 	criacao: string;
+	iddepartamento: any[] | string | null;
 
 	// Utilizados apenas através do cookie
 	admin: boolean;
+	diretor: boolean;
 }
 
 class Usuario {
 	private static readonly IdAdmin = 1;
 
-	public static async cookie(req: app.Request, res: app.Response = null, admin: boolean = false): Promise<Usuario> {
+	public static async cookie(req: app.Request, res: app.Response = null, apenasAdmin: boolean = false, adminOuDiretor: boolean = false): Promise<Usuario> {
 		let cookieStr = req.cookies[appsettings.cookie] as string;
 		if (!cookieStr || cookieStr.length !== 48) {
 			if (res) {
@@ -51,9 +53,12 @@ class Usuario {
 				usuario.nome = row.nome as string;
 				usuario.idperfil = row.idperfil as number;
 				usuario.admin = (usuario.idperfil === Perfil.Administrador);
+				usuario.diretor = (usuario.idperfil === Perfil.Diretor);
 			});
 
-			if (admin && usuario && usuario.idperfil !== Perfil.Administrador)
+			if (apenasAdmin && usuario && usuario.idperfil !== Perfil.Administrador)
+				usuario = null;
+			else if (adminOuDiretor && usuario && usuario.idperfil !== Perfil.Administrador && usuario.idperfil !== Perfil.Diretor)
 				usuario = null;
 			if (!usuario && res) {
 				res.statusCode = 403;
@@ -143,6 +148,16 @@ class Usuario {
 		if (isNaN(usuario.idperfil = parseInt(usuario.idperfil as any) as Perfil))
 			return "Perfil inválido";
 
+		if (!usuario.iddepartamento || !usuario.iddepartamento.length) {
+			usuario.iddepartamento = null;
+		} else {
+			usuario.iddepartamento = (usuario.iddepartamento as string).split(",").map(Number) as number[];
+			for (let i = 0; i < usuario.iddepartamento.length; i++) {
+				if (!usuario.iddepartamento[i])
+					return "Departamento inválido";
+			}
+		}
+
 		return null;
 	}
 
@@ -162,9 +177,40 @@ class Usuario {
 		return app.sql.connect(async (sql) => {
 			const lista: Usuario[] = await sql.query("select id, email, nome, idperfil, date_format(criacao, '%d/%m/%Y') criacao from usuario where id = ?", [id]);
 
-			return ((lista && lista[0]) || null);
+			if (!lista || !lista[0])
+				return null;
+
+			const usuario = lista[0];
+			usuario.iddepartamento = await sql.query("select iddepartamento from usuario_departamento where idusuario = ?", [id]);
+
+			return usuario;
 		});
 	}
+
+	private static async merge(sql: app.Sql, id: number, departamentos: number[] | null) {
+		if (!departamentos)
+			departamentos = [];
+
+		const existentes: { id: number, iddepartamento: number }[] = await sql.query(`SELECT id, iddepartamento FROM usuario_departamento WHERE idusuario = ?`, [id]);
+		const toRemove = existentes.filter(e => !(departamentos as number[]).includes(e.iddepartamento));
+		const toAdd = departamentos.filter(n => !existentes.some(e => e.iddepartamento === n));
+		const toUpdate: typeof existentes = [];
+
+		while (toRemove.length && toAdd.length) {
+			const item = toRemove.pop() as typeof existentes[number];
+			item.iddepartamento = toAdd.pop() as number;
+			toUpdate.push(item);
+		}
+
+		for (let i = 0; i < toRemove.length; i++)
+			await sql.query(`DELETE FROM usuario_departamento WHERE id = ?`, [toRemove[i].id]);
+
+		for (let i = 0; i < toUpdate.length; i++)
+			await sql.query(`UPDATE usuario_departamento SET iddepartamento = ? WHERE id = ?`, [toUpdate[i].iddepartamento, toUpdate[i].id]);
+
+		for (let i = 0; i < toAdd.length; i++)
+			await sql.query(`INSERT INTO usuario_departamento (idusuario, iddepartamento) VALUES (?, ?)`, [id, toAdd[i]]);
+	};
 
 	public static async criar(usuario: Usuario): Promise<string> {
 		const res = Usuario.validar(usuario, true);
@@ -172,8 +218,16 @@ class Usuario {
 			return res;
 
 		return app.sql.connect(async (sql) => {
+			await sql.beginTransaction();
+
 			try {
 				await sql.query("insert into usuario (email, nome, idperfil, criacao) values (?, ?, ?, now())", [usuario.email, usuario.nome, usuario.idperfil]);
+
+				usuario.id = (await sql.scalar("select last_insert_id()")) as number;
+
+				await Usuario.merge(sql, usuario.id, usuario.iddepartamento as number[]);
+
+				await sql.commit();
 
 				return null;
 			} catch (e) {
@@ -183,7 +237,7 @@ class Usuario {
 							return `O e-mail ${usuario.email} já está em uso`;
 						case "ER_NO_REFERENCED_ROW":
 						case "ER_NO_REFERENCED_ROW_2":
-							return "Perfil não encontrado";
+							return "Perfil ou departamento não encontrado";
 						default:
 							throw e;
 					}
@@ -203,9 +257,34 @@ class Usuario {
 			return "Não é possível editar o usuário administrador principal";
 
 		return app.sql.connect(async (sql) => {
-			await sql.query("update usuario set nome = ?, idperfil = ? where id = ?", [usuario.nome, usuario.idperfil, usuario.id]);
+			await sql.beginTransaction();
 
-			return (sql.affectedRows ? null : "Usuário não encontrado");
+			try {
+				await sql.query("update usuario set nome = ?, idperfil = ? where id = ?", [usuario.nome, usuario.idperfil, usuario.id]);
+
+				if (!sql.affectedRows)
+					return "Usuário não encontrado";
+	
+				await Usuario.merge(sql, usuario.id, usuario.iddepartamento as number[]);
+	
+				await sql.commit();
+	
+				return null;
+			} catch (e) {
+				if (e.code) {
+					switch (e.code) {
+						case "ER_DUP_ENTRY":
+							return `O e-mail ${usuario.email} já está em uso`;
+						case "ER_NO_REFERENCED_ROW":
+						case "ER_NO_REFERENCED_ROW_2":
+							return "Perfil ou departamento não encontrado";
+						default:
+							throw e;
+					}
+				} else {
+					throw e;
+				}
+			}
 		});
 	}
 
