@@ -13,6 +13,7 @@ interface Arquetipo {
 	nomeexterno: string;
 	descricaocurta: string;
 	descricaocompleta: string;
+	excluir_imagem_atual?: number | null;
 
 	//usado apenas no obter
 	iddepartamento: number[] | string | null;
@@ -71,7 +72,7 @@ class Arquetipo {
 
 	public static obter(id: number): Promise<Arquetipo> {
 		return app.sql.connect(async (sql) => {
-			const lista: Arquetipo[] = await sql.query("select id, nome, nomeexterno, descricaocurta, descricaocompleta from arquetipo where id = ?", [id]);
+			const lista: Arquetipo[] = await sql.query("select id, nome, nomeexterno, descricaocurta, descricaocompleta, versao from arquetipo where id = ?", [id]);
 
 			if (!lista || !lista[0])
 				return null;
@@ -123,24 +124,30 @@ class Arquetipo {
 			await sql.query(`INSERT INTO arquetipo_departamento (idarquetipo, iddepartamento) VALUES (?, ?)`, [id, toAdd[i]]);
 	};
 
-	public static async criar(arquetipo: Arquetipo): Promise<string | null> {
+	public static async criar(arquetipo: Arquetipo, imagem?: app.UploadedFile | null): Promise<string | number> {
 		const res = Arquetipo.validar(arquetipo, true);
 		if (res)
 			return res;
+
+		if (imagem && imagem.size > 1024 * 1024)
+			return "O tamanho da imagem não pode ser maior que 1MB";
 
 		return app.sql.connect(async (sql) => {
 			await sql.beginTransaction();
 
 			try {
-				await sql.query("insert into arquetipo (nome, nomeexterno,descricaocurta, descricaocompleta) values (?, ?, ?, ?)", [arquetipo.nome, arquetipo.nomeexterno, arquetipo.descricaocurta, arquetipo.descricaocompleta]);
+				await sql.query("insert into arquetipo (nome, nomeexterno, descricaocurta, descricaocompleta, versao) values (?, ?, ?, ?, ?)", [arquetipo.nome, arquetipo.nomeexterno, arquetipo.descricaocurta, arquetipo.descricaocompleta, imagem ? 1 : 0]);
 
 				arquetipo.id = (await sql.scalar("select last_insert_id()")) as number;
 
 				await Arquetipo.merge(sql, arquetipo.id, arquetipo.iddepartamento as number[]);
 
+				if (imagem)
+					await app.fileSystem.saveUploadedFile("public/img/arquetipo/" + arquetipo.id + ".jpg", imagem);
+
 				await sql.commit();
 
-				return null;
+				return arquetipo.id;
 			} catch (e) {
 				if (e.code === "ER_DUP_ENTRY" && typeof e.message === "string") {
 					if (e.message.includes("nomeexterno")) {
@@ -156,10 +163,19 @@ class Arquetipo {
 		});
 	}
 
-	public static async editar(arquetipo: Arquetipo): Promise<string | null> {
+	public static async editar(arquetipo: Arquetipo, imagem?: app.UploadedFile | null): Promise<string | number> {
 		const res = Arquetipo.validar(arquetipo, false);
 		if (res)
 			return res;
+
+		if (imagem) {
+			arquetipo.excluir_imagem_atual = 0;
+
+			if (imagem.size > 1024 * 1024)
+				return "O tamanho da imagem não pode ser maior que 1MB";
+		} else if (parseInt(arquetipo.excluir_imagem_atual as any)) {
+			arquetipo.excluir_imagem_atual = 1;
+		}
 
 		return app.sql.connect(async (sql) => {
 			try {
@@ -170,9 +186,25 @@ class Arquetipo {
 
 				await Arquetipo.merge(sql, arquetipo.id, arquetipo.iddepartamento as number[]);
 
+				let versao: number = await sql.scalar("select versao from arquetipo where id = ?", [arquetipo.id]);
+
+				const caminhoImagem = "public/img/arquetipo/" + arquetipo.id + ".jpg";
+				if (arquetipo.excluir_imagem_atual) {
+					versao = -(Math.abs(versao) + 1);
+					await sql.query("update arquetipo set versao = ? where id = ?", [versao, arquetipo.id]);
+
+					if ((await app.fileSystem.exists(caminhoImagem)))
+						await app.fileSystem.deleteFile(caminhoImagem);
+				} else if (imagem) {
+					versao = Math.abs(versao) + 1;
+					await sql.query("update arquetipo set versao = ? where id = ?", [versao, arquetipo.id]);
+
+					await app.fileSystem.saveUploadedFile(caminhoImagem, imagem);
+				}
+
 				await sql.commit();
 
-				return null;
+				return versao;
 			} catch (e) {
 				if (e.code === "ER_DUP_ENTRY" && typeof e.message === "string") {
 					if (e.message.includes("nomeexterno")) {

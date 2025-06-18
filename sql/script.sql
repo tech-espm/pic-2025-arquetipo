@@ -80,6 +80,7 @@ CREATE TABLE arquetipo (
   nomeexterno varchar(100) NOT NULL,
   descricaocurta varchar(255) NOT NULL,
   descricaocompleta text NOT NULL,
+  versao int NOT NULL,
   PRIMARY KEY (id),
   UNIQUE KEY arquetipo_nome_UN (nome)
 );
