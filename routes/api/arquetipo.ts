@@ -25,7 +25,7 @@ class ArquetipoApiRoute {
 			return;
 		}
 
-		res.json(arquetipo);
+		res.send(arquetipo);
 	}
 	@app.http.post()
 	public static async criar(req: app.Request, res: app.Response) {

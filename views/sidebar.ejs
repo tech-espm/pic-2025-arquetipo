@@ -46,13 +46,26 @@
 
 	<li class="nav-item">
 		<a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseArquetipos" aria-expanded="true" aria-controls="collapseArquetipos">
-			<i class="fas fa-fw fa-building"></i>
+			<i class="fa fa-fw fa-regular fa-theater-masks"></i>
 			<span>Arquétipos</span>
 		</a>
 		<div id="collapseArquetipos" class="collapse" data-parent="#accordionSidebar">
 			<div class="bg-white py-2 collapse-inner rounded">
 				<a class="collapse-item" href="<%- root %>/arquetipo/criar">Criar</a>
 				<a class="collapse-item" href="<%- root %>/arquetipo/listar">Gerenciar</a>
+			</div>
+		</div>
+	</li>
+
+	<li class="nav-item">
+		<a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseQuestionarios" aria-expanded="true" aria-controls="collapseQuestionarios">
+			<i class="fas fa-fw fa-clipboard-list"></i>
+			<span>Questionários</span>
+		</a>
+		<div id="collapseQuestionarios" class="collapse" data-parent="#accordionSidebar">
+			<div class="bg-white py-2 collapse-inner rounded">
+				<a class="collapse-item" href="<%- root %>/questionario/criar">Criar</a>
+				<a class="collapse-item" href="<%- root %>/questionario/listar">Gerenciar</a>
 			</div>
 		</div>
 	</li>

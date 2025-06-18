@@ -65,7 +65,7 @@ class ArquetipoRoute {
 			return;
 		} else {
 			res.render("arquetipo/editar", {
-				titulo: "Editar Departamento",
+				titulo: "Editar Arquétipo",
 				departamentos: departamentos,
 				usuario: u,
 				item: item,
