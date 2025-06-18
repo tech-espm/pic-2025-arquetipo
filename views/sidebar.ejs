@@ -44,6 +44,19 @@
 	</li>
 	<% } %>
 
+	<li class="nav-item">
+		<a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseArquetipos" aria-expanded="true" aria-controls="collapseArquetipos">
+			<i class="fas fa-fw fa-building"></i>
+			<span>Arquétipos</span>
+		</a>
+		<div id="collapseArquetipos" class="collapse" data-parent="#accordionSidebar">
+			<div class="bg-white py-2 collapse-inner rounded">
+				<a class="collapse-item" href="<%- root %>/arquetipo/criar">Criar</a>
+				<a class="collapse-item" href="<%- root %>/arquetipo/listar">Gerenciar</a>
+			</div>
+		</div>
+	</li>
+
 	<hr class="sidebar-divider">
 
 	<div class="sidebar-heading">

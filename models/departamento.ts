@@ -42,14 +42,20 @@ class Departamento {
 		});
 	}
 
-	public static obter(id: number): Promise<Departamento> {
+	public static obter(id: number): Promise<Departamento | null>;
+	public static obter(id: number[]): Promise<Departamento[]>;
+	public static obter(id: number | number[]): Promise<Departamento | Departamento[] | null> {
 		return app.sql.connect(async (sql) => {
-			const lista: Departamento[] = await sql.query("select id, nome from departamento where id = ?", [id]);
-
-			if (!lista || !lista[0])
-				return null;
-
-			return lista[0];
+			if (id instanceof Array) {
+				if (id.length === 0) return [];
+				const lista: Departamento[] = await sql.query(`select id, nome from departamento where id in (?)`, [id]);
+				return lista || [];
+			} else {
+				const lista: Departamento[] = await sql.query("select id, nome from departamento where id = ?", [id]);
+				if (!lista || !lista[0])
+					return null;
+				return lista[0];
+			}
 		});
 	}
 

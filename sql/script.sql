@@ -49,3 +49,28 @@ CREATE TABLE usuario_departamento (
   CONSTRAINT usuario_idusuario_FK FOREIGN KEY (idusuario) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT usuario_iddepartamento_FK FOREIGN KEY (iddepartamento) REFERENCES departamento (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
+
+
+-- DROP TABLE IF EXISTS arquetipo;
+CREATE TABLE arquetipo (
+  id int NOT NULL AUTO_INCREMENT,
+  nome varchar(100) NOT NULL,
+  nomeexterno varchar(100) NOT NULL,
+  descricaocurta varchar(255) NOT NULL,
+  descricaocompleta text NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY arquetipo_nome_UN (nome)
+);
+
+-- DROP TABLE IF EXISTS arquetipo_departamento;
+CREATE TABLE arquetipo_departamento (
+  id int NOT NULL AUTO_INCREMENT,
+  idarquetipo int NOT NULL,
+  iddepartamento int NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY arquetipo_idarquetipo_FK_IX (idarquetipo, iddepartamento),
+  KEY arquetipo_iddepartamento_FK_IX (iddepartamento),
+  CONSTRAINT arquetipo_idarquetipo_FK FOREIGN KEY (idarquetipo) REFERENCES arquetipo (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  -- Perguntar: é nescessario ser RESTRICT nesse caso
+  CONSTRAINT arquetipo_iddepartamento_FK FOREIGN KEY (iddepartamento) REFERENCES departamento (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+);
