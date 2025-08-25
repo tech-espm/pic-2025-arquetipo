@@ -1,325 +1,445 @@
 import app = require("teem");
-import { randomBytes } from "crypto";
-import appsettings = require("../appsettings");
-import DataUtil = require("../utils/dataUtil");
-import intToHex = require("../utils/intToHex");
-import Validacao = require("../utils/validacao");
-import Disponibilidade = require("../enums/disponibilidade");
-import Arquetipo = require("./arquetipo");
 
 interface Questionario {
-    id: number;
-    nome: string;
-    nomeexterno: string;
-    iddisponibilidade: Disponibilidade;
-    anonimo: boolean;
-    url: string;
-    descricao: string;
-    corfundopagina:string;
-    corfundocard:string;
-    cordestaque:string;
-    cortextocard:string;
-    cortextodestaque:string;
-    criacao:string | null;
-    textointroducao:string | null;
-    questoes: any;
-    
-    //usado apenas no obter
-    iddepartamento: number[] | string | null;
-    idpublicoalvo: number[] | string | null;
-    idarquetipos: number[] | string | null;
+	id: number;
+	nome: string;
+	nomeexterno: string;
+	iddisponibilidade: number;
+	anonimo: boolean;
+	url: string;
+	descricao: string;
+	corfundopagina: string;
+	corfundocard: string;
+	cordestaque: string;
+	cortextocard: string;
+	cortextodestaque: string;
+	criacao: string | null;
+	textointroducao: string | null;
+	questoes: any;
+	excluir_imagem_introducao?: number | null;
+	excluir_imagem_questionario?: number | null;
+	excluir_imagem_logo?: number | null;
+
+
+	//usado apenas no obter
+	iddepartamento: number[] | string | null;
+	idpublicosalvos: number[] | string | null;
+	idarquetipos: number[] | string | null;
 }
 
 
 class Questionario {
-    private static validar(questionario: Questionario, criacao: boolean): string {
-        if (!questionario)
-            return "Questionário inválido";
+	private static validar(questionario: Questionario, criacao: boolean): string {
+		if (!questionario)
+			return "Questionário inválido";
 
-        questionario.id = parseInt(questionario.id as any);
+		questionario.id = parseInt(questionario.id as any);
 
-        if (!criacao) {
-            if (isNaN(questionario.id))
-                return "Id inválido";
-        }
+		if (!criacao) {
+			if (isNaN(questionario.id))
+				return "Id inválido";
+		}
 
-        if (!questionario.nome || !(questionario.nome = questionario.nome.normalize().trim()) || questionario.nome.length > 100)
-            return "Nome inválido";
+		if (!questionario.nome || !(questionario.nome = questionario.nome.normalize().trim()) || questionario.nome.length > 100)
+			return "Nome inválido";
 
-        if (!questionario.nomeexterno || !(questionario.nomeexterno = questionario.nomeexterno.normalize().trim()) || questionario.nomeexterno.length > 100)
-            return "Nome externo inválido";
+		if (!questionario.nomeexterno || !(questionario.nomeexterno = questionario.nomeexterno.normalize().trim()) || questionario.nomeexterno.length > 100)
+			return "Nome externo inválido";
 
+		if (!questionario.url || !(questionario.url = questionario.url.normalize().trim()) || questionario.url.length > 100)
+			return "URL inválida";
 
-        if (!questionario.descricao || !(questionario.descricao = questionario.descricao.normalize()) || questionario.descricao.length > 255)
-            return "Descrição inválida";
+		if (!questionario.descricao || !(questionario.descricao = questionario.descricao.normalize().trim()) || questionario.descricao.length > 1000)
+			return "Descrição inválida";
 
-   		if (isNaN(questionario.iddisponibilidade = parseInt(questionario.iddisponibilidade as any) as Disponibilidade))
+		if (!questionario.corfundopagina || !(questionario.corfundopagina = questionario.corfundopagina.trim()) || questionario.corfundopagina.length > 7)
+			return "Cor de fundo da página inválida";
+
+		if (!questionario.corfundocard || !(questionario.corfundocard = questionario.corfundocard.trim()) || questionario.corfundocard.length > 7)
+			return "Cor de fundo do card inválida";
+
+		if (!questionario.cordestaque || !(questionario.cordestaque = questionario.cordestaque.trim()) || questionario.cordestaque.length > 7)
+			return "Cor de destaque inválida";
+
+		if (!questionario.cortextocard || !(questionario.cortextocard = questionario.cortextocard.trim()) || questionario.cortextocard.length > 7)
+			return "Cor do texto do card inválida";
+
+		if (!questionario.cortextodestaque || !(questionario.cortextodestaque = questionario.cortextodestaque.trim()) || questionario.cortextodestaque.length > 7)
+			return "Cor do texto de destaque inválida";
+
+		// if (!questionario.anonimo)
+		// 	return "Valor de anonimato inválido";
+
+		if (!questionario.iddisponibilidade || isNaN(parseInt(questionario.iddisponibilidade as any)))
 			return "Disponibilidade inválida";
 
-        if (questionario.anonimo != false && questionario.anonimo != true)
-            return "Anônimo inválido";
+		// Validação dos relacionamentos - obg gpt
+		const relacionamentos = {
+			"iddepartamento": "Departamento inválido",
+			"idpublicosalvos": "Público-alvo inválido",
+			"idarquetipos": "Arquétipo inválido"
+		};
 
-        if (!questionario.url || !(questionario.url = questionario.url.normalize().trim()) || questionario.url.length > 100)
-            return "URL inválida";
-
-        if (!questionario.corfundopagina || !(questionario.corfundopagina = questionario.corfundopagina.normalize().trim()) || questionario.corfundopagina.length > 7)
-            return "Cor de fundo da pagina inválida";
-
-        if (!questionario.corfundocard || !(questionario.corfundocard = questionario.corfundocard.normalize().trim()) || questionario.corfundocard.length > 7)
-            return "Cor de fundo do card inválida";
-
-        if (!questionario.cordestaque || !(questionario.cordestaque = questionario.cordestaque.normalize().trim()) || questionario.cordestaque.length > 7)
-            return "Cor de destaque inválida";
-
-        if (!questionario.cortextocard || !(questionario.cortextocard = questionario.cortextocard.normalize().trim()) || questionario.cortextocard.length > 7)
-            return "Cor do texto do card inválida";
-
-        if (!questionario.cortextodestaque || !(questionario.cortextodestaque = questionario.cortextodestaque.normalize().trim()) || questionario.cortextodestaque.length > 7)
-            return "Cor do texto de destaque inválida";
-
-        if (!questionario.textointroducao || !(questionario.textointroducao = questionario.textointroducao.normalize().trim()) || questionario.textointroducao.length > 5000)
-            return "Texto de introdução inválido";
-
-		if (!questionario.iddepartamento || !questionario.iddepartamento.length) {
-			questionario.iddepartamento = null;
-		} else {
-			questionario.iddepartamento = (questionario.iddepartamento as string).split(",").map(Number) as number[];
-			for (let i = 0; i < questionario.iddepartamento.length; i++) {
-				if (!questionario.iddepartamento[i])
-					return "Departamento inválido";
+		for (const campo in relacionamentos) {
+			if (!questionario[campo] || !(questionario[campo] as any).length) {
+				questionario[campo] = null;
+			} else {
+				questionario[campo] = (questionario[campo] as string).split(",").map(Number) as number[];
+				for (let i = 0; i < (questionario[campo] as number[]).length; i++) {
+					if (!(questionario[campo] as number[])[i])
+						return relacionamentos[campo];
+				}
 			}
 		}
 
-        if (!questionario.idpublicoalvo || !questionario.idpublicoalvo.length) {
-			questionario.idpublicoalvo = null;
-		} else {
-			questionario.idpublicoalvo = (questionario.idpublicoalvo as string).split(",").map(Number) as number[];
-			for (let i = 0; i < questionario.idpublicoalvo.length; i++) {
-				if (!questionario.idpublicoalvo[i])
-					return "Público-alvo inválido";
-			}
+		return null;
+	}
+
+
+	public static listar(): Promise<Questionario[]> {
+		return app.sql.connect(async (sql) => {
+			return (await sql.query("select id, nome,nomeexterno,iddisponibilidade,anonimo,url,descricao,criacao from questionario")) || [];
+		});
+	}
+
+	public static listarCombo(): Promise<Questionario[]> {
+		return app.sql.connect(async (sql) => {
+			return (await sql.query("select id, nome,nomeexterno,iddisponibilidade,anonimo,url,descricao,criacao from questionario order by nome asc")) || [];
+		});
+	}
+
+	public static obter(id: number): Promise<Questionario> {
+		return app.sql.connect(async (sql) => {
+			const lista: Questionario[] = await sql.query("select id, nome,nomeexterno,iddisponibilidade,anonimo,url,descricao,textointroducao,corfundopagina,corfundocard,cordestaque,cortextocard,cortextodestaque, versaointroducao, versaoquestionario, versaologo from questionario where id = ?", [id]);
+
+			if (!lista || !lista[0])
+				return null;
+
+			const questionario = lista[0];
+			questionario.iddepartamento = await sql.query("select iddepartamento from questionario_departamento where idquestionario = ?", [id]);
+
+			questionario.idpublicosalvos = await sql.query("select idpublicoalvo from questionario_publicoalvo where idquestionario = ?", [id]);
+
+			questionario.idarquetipos = await sql.query("select idarquetipo from questionario_arquetipo where idquestionario = ?", [id]);
+
+			return questionario;
+		});
+	}
+
+	private static async merge(sql: app.Sql, id: number, departamentos: number[] | null, arquetipos: number[] | null, publicosalvos: number[] | null) {
+		if (!departamentos)
+			departamentos = [];
+
+		const existentesDepartamentos: { id: number, iddepartamento: number }[] = await sql.query(`SELECT id, iddepartamento FROM questionario_departamento WHERE idquestionario = ?`, [id]);
+		const toRemoveDepartamentos = existentesDepartamentos.filter(e => !(departamentos as number[]).includes(e.iddepartamento));
+		const toAddDepartamentos = departamentos.filter(n => !existentesDepartamentos.some(e => e.iddepartamento === n));
+		const toUpdateDepartamentos: typeof existentesDepartamentos = [];
+
+		while (toRemoveDepartamentos.length && toAddDepartamentos.length) {
+			const item = toRemoveDepartamentos.pop() as typeof existentesDepartamentos[number];
+			item.iddepartamento = toAddDepartamentos.pop() as number;
+			toUpdateDepartamentos.push(item);
 		}
 
-        if(!questionario.idarquetipos || !questionario.idarquetipos.length) {
-            questionario.idarquetipos = null;
-        }
-        else {
-            questionario.idarquetipos = (questionario.idarquetipos as string).split(",").map(Number) as number[];
-            for (let i = 0; i < questionario.idarquetipos.length; i++) {
-                if (!questionario.idarquetipos[i])
-                    return "Arquétipo inválido";
-            }
-        }
+		for (let i = 0; i < toRemoveDepartamentos.length; i++)
+			await sql.query(`DELETE FROM questionario_departamento WHERE id = ?`, [toRemoveDepartamentos[i].id]);
 
-        return null;
-    }
+		for (let i = 0; i < toUpdateDepartamentos.length; i++)
+			await sql.query(`UPDATE questionario_departamento SET iddepartamento = ? WHERE id = ?`, [toUpdateDepartamentos[i].iddepartamento, toUpdateDepartamentos[i].id]);
 
-    public static listar(): Promise<Questionario[]> {
-        return app.sql.connect(async (sql) => {
-            return (await sql.query("select id, nome, nomeexterno, iddisponibilidade, anonimo, url, descricao, criacao from questionario")) || [];
-        });
-    }
+		for (let i = 0; i < toAddDepartamentos.length; i++)
+			await sql.query(`INSERT INTO questionario_departamento (idquestionario, iddepartamento) VALUES (?, ?)`, [id, toAddDepartamentos[i]]);
 
-    public static listarCombo(): Promise<Questionario[]> {
-        return app.sql.connect(async (sql) => {
-            return (await sql.query("select id, nome, nomeexterno, iddisponibilidade, anonimo, url, descricao, criacao from questionario order by nome asc")) || [];
-        });
-    }
 
-    public static obter(id: number): Promise<Questionario> {
-        return app.sql.connect(async (sql) => {
-            const lista: Questionario[] = await sql.query("select id, nome, nomeexterno, iddisponibilidade, anonimo, url, descricao, corfundopagina, corfundocard, cordestaque, cortextocard, cortextodestaque, criacao, textointroducao, questoes  from questionario where id = ?", [id]);
+		if (!arquetipos)
+			arquetipos = [];
 
-            if (!lista || !lista[0])
-                return null;
+		const existentesArquetipos: { id: number, idarquetipo: number }[] = await sql.query(`SELECT id, idarquetipo FROM questionario_arquetipo WHERE idquestionario = ?`, [id]);
+		const toRemoveArquetipos = existentesArquetipos.filter(e => !(arquetipos as number[]).includes(e.idarquetipo));
+		const toAddArquetipos = arquetipos.filter(n => !existentesArquetipos.some(e => e.idarquetipo === n));
+		const toUpdateArquetipos: typeof existentesArquetipos = [];
 
-            const questionario = lista[0];
-            questionario.iddepartamento = await sql.query("select iddepartamento from questionario_departamento where idquestionario = ?", [id]);
-            questionario.idarquetipos = await sql.query("select idarquetipo from questionario_arquetipo where idquestionario = ?", [id]);
-            questionario.idpublicoalvo = await sql.query("select idpublico from questionario_publico where idquestionario = ?", [id]);
+		while (toRemoveArquetipos.length && toAddArquetipos.length) {
+			const item = toRemoveArquetipos.pop() as typeof existentesArquetipos[number];
+			item.idarquetipo = toAddArquetipos.pop() as number;
+			toUpdateArquetipos.push(item);
+		}
 
-            return lista[0];
-        });
-    }
+		for (let i = 0; i < toRemoveArquetipos.length; i++)
+			await sql.query(`DELETE FROM questionario_arquetipo WHERE id = ?`, [toRemoveArquetipos[i].id]);
 
-    public static obterPeloNome(nome: string): Promise<Questionario> {
-        return app.sql.connect(async (sql) => {
-            const lista: Questionario[] = await sql.query("select id, nome, nomeexterno, iddisponibilidade, anonimo, url, descricao, corfundopagina, corfundocard, cordestaque, cortextocard, cortextodestaque, criacao, textointroducao, questoes from questionario where nome = ?", [nome]);
+		for (let i = 0; i < toUpdateArquetipos.length; i++)
+			await sql.query(`UPDATE questionario_arquetipo SET idarquetipo = ? WHERE id = ?`, [toUpdateArquetipos[i].idarquetipo, toUpdateArquetipos[i].id]);
 
-            if (!lista || !lista[0])
-                return null;
+		for (let i = 0; i < toAddArquetipos.length; i++)
+			await sql.query(`INSERT INTO questionario_arquetipo (idquestionario, idarquetipo) VALUES (?, ?)`, [id, toAddArquetipos[i]]);
 
-            const questionario = lista[0];
-            questionario.iddepartamento = await sql.query("select iddepartamento from questionario_departamento where idquestionario = ?", [questionario.id]);
-            questionario.idarquetipos = await sql.query("select idarquetipo from questionario_arquetipo where idquestionario = ?", [questionario.id]);
-            questionario.idpublicoalvo = await sql.query("select idpublico from questionario_publico where idquestionario = ?", [questionario.id]);
 
-            return lista[0];
-        });
-    }
 
-    private static async merge(	sql: app.Sql,	id: number,departamentos: number[] | null,idarquetipos: number[] | null,idpublicoalvo: number[] | null
-) {
-	if (!departamentos) departamentos = [];
+		if (!publicosalvos)
+			publicosalvos = [];
 
-	const existentes: { id: number, iddepartamento: number }[] = await sql.query(
-		`SELECT id, iddepartamento FROM questionario_departamento WHERE idquestionario = ?`,
-		[id]
-	);
-	const toRemove = existentes.filter(e => !departamentos.includes(e.iddepartamento));
-	const toAdd = departamentos.filter(n => !existentes.some(e => e.iddepartamento === n));
-	const toUpdate: typeof existentes = [];
+		const existentesPublicos: { id: number, idpublicoalvo: number }[] = await sql.query(`SELECT id, idpublicoalvo FROM questionario_publicoalvo WHERE idquestionario = ?`, [id]);
+		const toRemovePublicos = existentesPublicos.filter(e => !(publicosalvos as number[]).includes(e.idpublicoalvo));
+		const toAddPublicos = publicosalvos.filter(n => !existentesPublicos.some(e => e.idpublicoalvo === n));
+		const toUpdatePublicos: typeof existentesPublicos = [];
 
-	while (toRemove.length && toAdd.length) {
-		const item = toRemove.pop()!;
-		item.iddepartamento = toAdd.pop()!;
-		toUpdate.push(item);
+		while (toRemovePublicos.length && toAddPublicos.length) {
+			const item = toRemovePublicos.pop() as typeof existentesPublicos[number];
+			item.idpublicoalvo = toAddPublicos.pop() as number;
+			toUpdatePublicos.push(item);
+		}
+
+		for (let i = 0; i < toRemovePublicos.length; i++)
+			await sql.query(`DELETE FROM questionario_publicoalvo WHERE id = ?`, [toRemovePublicos[i].id]);
+
+		for (let i = 0; i < toUpdatePublicos.length; i++)
+			await sql.query(`UPDATE questionario_publicoalvo SET idpublicoalvo = ? WHERE id = ?`, [toUpdatePublicos[i].idpublicoalvo, toUpdatePublicos[i].id]);
+
+		for (let i = 0; i < toAddPublicos.length; i++)
+			await sql.query(`INSERT INTO questionario_publicoalvo (idquestionario, idpublicoalvo) VALUES (?, ?)`, [id, toAddPublicos[i]]);
+
+	};
+
+	public static async criar(questionario: Questionario, imagemintroducao?: app.UploadedFile | null, imagemquestionario?: app.UploadedFile | null, imagemlogo?: app.UploadedFile | null): Promise<string | number> {
+		const res = Questionario.validar(questionario, true);
+		if (res)
+			return res;
+
+		if (imagemintroducao && imagemintroducao.size > 1024 * 1024)
+			return "O tamanho da imagem não pode ser maior que 1MB";
+
+
+		if (imagemquestionario && imagemquestionario.size > 1024 * 1024)
+			return "O tamanho da imagem não pode ser maior que 1MB";
+
+		if (imagemlogo && imagemlogo.size > 1024 * 1024)
+			return "O tamanho da imagem não pode ser maior que 1MB";
+
+		return app.sql.connect(async (sql) => {
+			await sql.beginTransaction();
+
+			try {
+				await sql.query("insert into questionario (nome, nomeexterno, iddisponibilidade, anonimo, url, descricao, corfundopagina, corfundocard, cordestaque, cortextocard, cortextodestaque, criacao, textointroducao, versaointroducao, versaoquestionario, versaologo) values (?,?,?,?,?,?,?,?,?,?,?,NOW(),?,?,?,?)", [questionario.nome, questionario.nomeexterno, questionario.iddisponibilidade, questionario.anonimo, questionario.url, questionario.descricao, questionario.corfundopagina, questionario.corfundocard, questionario.cordestaque, questionario.cortextocard, questionario.cortextodestaque, questionario.textointroducao, imagemintroducao ? 1 : 0, imagemquestionario ? 1 : 0, imagemlogo ? 1 : 0]);
+
+				questionario.id = (await sql.scalar("select last_insert_id()")) as number;
+
+				await Questionario.merge(sql, questionario.id, questionario.iddepartamento as number[], questionario.idarquetipos as number[], questionario.idpublicosalvos as number[]);
+
+				if (imagemintroducao)
+					await app.fileSystem.saveUploadedFile("public/img/questionario/introducao/" + questionario.id + ".jpg", imagemintroducao);
+
+				if (imagemquestionario)
+					await app.fileSystem.saveUploadedFile("public/img/questionario/" + questionario.id + ".jpg", imagemquestionario);
+
+				if (imagemlogo)
+					await app.fileSystem.saveUploadedFile("public/img/questionario/logo/" + questionario.id + ".jpg", imagemlogo);
+
+				await sql.commit();
+
+				return questionario.id;
+			} catch (e) {
+				if (e.code === "ER_DUP_ENTRY" && typeof e.message === "string") {
+					if (e.message.includes("nomeexterno")) {
+						return `O nome externo ${questionario.nomeexterno} já está em uso`;
+					}
+					if (e.message.includes("nome")) {
+						return `O nome ${questionario.nome} já está em uso`;
+					}
+
+					if (e.message.includes("url")) {
+						return `O URL ${questionario.url} já está em uso`;
+					}
+					return "Já existe um registro com dados duplicados";
+				}
+				throw e;
+			}
+		});
 	}
 
-	for (const item of toRemove)
-		await sql.query(`DELETE FROM questionario_departamento WHERE id = ?`, [item.id]);
+	public static async editar(
+		questionario: Questionario,
+		imagemintroducao?: app.UploadedFile | null,
+		imagemquestionario?: app.UploadedFile | null,
+		imagemlogo?: app.UploadedFile | null
+	): Promise<string | number> {
+		const res = Questionario.validar(questionario, false);
+		if (res)
+			return res;
 
-	for (const item of toUpdate)
-		await sql.query(`UPDATE questionario_departamento SET iddepartamento = ? WHERE id = ?`, [item.iddepartamento, item.id]);
+		if (imagemintroducao && imagemintroducao.size > 1024 * 1024)
+			return "A imagem de introdução não pode ter mais que 1MB";
+		if (imagemquestionario && imagemquestionario.size > 1024 * 1024)
+			return "A imagem do questionário não pode ter mais que 1MB";
+		if (imagemlogo && imagemlogo.size > 1024 * 1024)
+			return "A imagem da logo não pode ter mais que 1MB";
 
-	for (const n of toAdd)
-		await sql.query(`INSERT INTO questionario_departamento (idquestionario, iddepartamento) VALUES (?, ?)`, [id, n]);
+		questionario.excluir_imagem_introducao = parseInt(questionario.excluir_imagem_introducao as any) ? 1 : 0;
+		questionario.excluir_imagem_questionario = parseInt(questionario.excluir_imagem_questionario as any) ? 1 : 0;
+		questionario.excluir_imagem_logo = parseInt(questionario.excluir_imagem_logo as any) ? 1 : 0;
 
-	// Arquetipos
-	if (!idarquetipos) idarquetipos = [];
+		return app.sql.connect(async (sql) => {
+			await sql.beginTransaction();
+			try {
+				await sql.query(`
+				update questionario set
+					nome = ?,
+					nomeexterno = ?,
+					descricao = ?,
+					url = ?,
+					textointroducao = ?,
+					anonimo = ?,
+					iddisponibilidade = ?,
+					corfundopagina = ?,
+					corfundocard = ?,
+					cortextocard = ?,
+					cordestaque = ?,
+					cortextodestaque = ?
+				where id = ?
+			`, [
+					questionario.nome,
+					questionario.nomeexterno,
+					questionario.descricao,
+					questionario.url,
+					questionario.textointroducao,
+					questionario.anonimo,
+					questionario.iddisponibilidade,
+					questionario.corfundopagina,
+					questionario.corfundocard,
+					questionario.cortextocard,
+					questionario.cordestaque,
+					questionario.cortextodestaque,
+					questionario.id
+				]);
 
-	const existentesArquetipos: { id: number, idarquetipo: number }[] = await sql.query(
-		`SELECT id, idarquetipo FROM questionario_arquetipo WHERE idquestionario = ?`,
-		[id]
-	);
-	const toRemoveArquetipos = existentesArquetipos.filter(e => !idarquetipos.includes(e.idarquetipo));
-	const toAddArquetipos = idarquetipos.filter(n => !existentesArquetipos.some(e => e.idarquetipo === n));
-	const toUpdateArquetipos: typeof existentesArquetipos = [];
+				if (!sql.affectedRows)
+					return "Questionário não encontrado";
 
-	while (toRemoveArquetipos.length && toAddArquetipos.length) {
-		const item = toRemoveArquetipos.pop()!;
-		item.idarquetipo = toAddArquetipos.pop()!;
-		toUpdateArquetipos.push(item);
+				await Questionario.merge(sql, questionario.id, questionario.iddepartamento as number[], questionario.idarquetipos as number[], questionario.idpublicosalvos as number[]);
+
+				let versaoIntroducao: number = await sql.scalar("select versaointroducao from questionario where id = ?", [questionario.id]);
+				let versaoQuestionario: number = await sql.scalar("select versaoquestionario from questionario where id = ?", [questionario.id]);
+				let versaoLogo: number = await sql.scalar("select versaologo from questionario where id = ?", [questionario.id]);
+				// obg gpt 
+				versaoIntroducao = await Questionario.atualizarImagem(sql, `public/img/questionario/introducao/${questionario.id}.jpg`, imagemintroducao, versaoIntroducao, !!questionario.excluir_imagem_introducao, "questionario", "versaointroducao", questionario.id);
+				versaoQuestionario = await Questionario.atualizarImagem(sql, `public/img/questionario/${questionario.id}.jpg`, imagemquestionario, versaoQuestionario, !!questionario.excluir_imagem_questionario, "questionario", "versaoquestionario", questionario.id);
+				versaoLogo = await Questionario.atualizarImagem(sql, `public/img/questionario/logo/${questionario.id}.jpg`, imagemlogo, versaoLogo, !!questionario.excluir_imagem_logo, "questionario", "versaologo", questionario.id);
+
+
+				await sql.commit();
+
+				return questionario.id;
+			} catch (e) {
+				if (e.code === "ER_DUP_ENTRY" && typeof e.message === "string") {
+					if (e.message.includes("nomeexterno"))
+						return `O nome externo ${questionario.nomeexterno} já está em uso`;
+					if (e.message.includes("nome"))
+						return `O nome ${questionario.nome} já está em uso`;
+					if (e.message.includes("url"))
+						return `A URL ${questionario.url} já está em uso`;
+					return "Já existe um registro com dados duplicados";
+				}
+				throw e;
+			}
+		});
 	}
 
-	for (const item of toRemoveArquetipos)
-		await sql.query(`DELETE FROM questionario_arquetipo WHERE id = ?`, [item.id]);
+	private static async atualizarImagem(sql: app.Sql, caminho: string, imagem: app.UploadedFile | null | undefined, versaoAtual: number, excluir: boolean, tabela: string, campoVersao: string, id: number): Promise<number> {
+		if (excluir) {
+			versaoAtual = -(Math.abs(versaoAtual) + 1);
+			await sql.query(`UPDATE ${tabela} SET ${campoVersao} = ? WHERE id = ?`, [versaoAtual, id]);
 
-	for (const item of toUpdateArquetipos)
-		await sql.query(`UPDATE questionario_arquetipo SET idarquetipo = ? WHERE id = ?`, [item.idarquetipo, item.id]);
-
-	for (const n of toAddArquetipos)
-		await sql.query(`INSERT INTO questionario_arquetipo (idquestionario, idarquetipo) VALUES (?, ?)`, [id, n]);
-
-	// Público alvo
-	if (!idpublicoalvo) idpublicoalvo = [];
-
-	const existentesPublico: { id: number, idpublico: number }[] = await sql.query(
-		`SELECT id, idpublico FROM questionario_publico WHERE idquestionario = ?`,
-		[id]
-	);
-	const toRemovePublico = existentesPublico.filter(e => !idpublicoalvo!.includes(e.idpublico));
-	const toAddPublico = idpublicoalvo.filter(n => !existentesPublico.some(e => e.idpublico === n));
-	const toUpdatePublico: typeof existentesPublico = [];
-
-	while (toRemovePublico.length && toAddPublico.length) {
-		const item = toRemovePublico.pop()!;
-		item.idpublico = toAddPublico.pop()!;
-		toUpdatePublico.push(item);
+			if (await app.fileSystem.exists(caminho)) {
+				await app.fileSystem.deleteFile(caminho);
+			}
+		} else if (imagem) {
+			versaoAtual = Math.abs(versaoAtual) + 1;
+			await sql.query(`UPDATE ${tabela} SET ${campoVersao} = ? WHERE id = ?`, [versaoAtual, id]);
+			await app.fileSystem.saveUploadedFile(caminho, imagem);
+		}
+		return versaoAtual;
 	}
 
-	for (const item of toRemovePublico)
-		await sql.query(`DELETE FROM questionario_publico WHERE id = ?`, [item.id]);
 
-	for (const item of toUpdatePublico)
-		await sql.query(`UPDATE questionario_publico SET idpublico = ? WHERE id = ?`, [item.idpublico, item.id]);
+	// public static async editar(arquetipo: Arquetipo, imagem?: app.UploadedFile | null): Promise<string | number> {
+	// 	const res = Arquetipo.validar(arquetipo, false);
+	// 	if (res)
+	// 		return res;
 
-	for (const n of toAddPublico)
-		await sql.query(`INSERT INTO questionario_publico (idquestionario, idpublico) VALUES (?, ?)`, [id, n]);
-}
+	// 	if (imagem) {
+	// 		arquetipo.excluir_imagem_atual = 0;
 
+	// 		if (imagem.size > 1024 * 1024)
+	// 			return "O tamanho da imagem não pode ser maior que 1MB";
+	// 	} else if (parseInt(arquetipo.excluir_imagem_atual as any)) {
+	// 		arquetipo.excluir_imagem_atual = 1;
+	// 	}
 
-    public static async criar(questionario: Questionario): Promise<string | null> {
-        const res = Questionario.validar(questionario, true);
-        if (res)
-            return res;
+	// 	return app.sql.connect(async (sql) => {
+	// 		try {
+	// 			await sql.query("update arquetipo set nome = ?, nomeexterno = ?, descricaocurta = ?, descricaocompleta = ? where id = ?", [arquetipo.nome, arquetipo.nomeexterno, arquetipo.descricaocurta, arquetipo.descricaocompleta, arquetipo.id]);
 
-        return app.sql.connect(async (sql) => {
-            await sql.beginTransaction();
+	// 			if (!sql.affectedRows)
+	// 				return "Arquétipo não encontrado";
 
-            try {
-            await sql.query("insert into questionario (nome, nomeexterno, iddisponibilidade, anonimo, url, descricao, corfundopagina, corfundocard, cordestaque, cortextocard, cortextodestaque, criacao) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [questionario.nome, questionario.nomeexterno, questionario.iddisponibilidade, questionario.anonimo, questionario.url, questionario.descricao, questionario.corfundopagina, questionario.corfundocard, questionario.cordestaque, questionario.cortextocard, questionario.cortextodestaque, questionario.criacao]);
+	// 			await Arquetipo.merge(sql, arquetipo.id, arquetipo.iddepartamento as number[]);
 
-                questionario.id = (await sql.scalar("select last_insert_id()")) as number;
+	// 			let versao: number = await sql.scalar("select versao from arquetipo where id = ?", [arquetipo.id]);
 
-                await Questionario.merge(sql, questionario.id, questionario.iddepartamento as number[], questionario.idarquetipos as number[], questionario.idpublicoalvo as number[]);
+	// 			const caminhoImagem = "public/img/arquetipo/" + arquetipo.id + ".jpg";
+	// 			if (arquetipo.excluir_imagem_atual) {
+	// 				versao = -(Math.abs(versao) + 1);
+	// 				await sql.query("update arquetipo set versao = ? where id = ?", [versao, arquetipo.id]);
 
-                await sql.commit();
+	// 				if ((await app.fileSystem.exists(caminhoImagem)))
+	// 					await app.fileSystem.deleteFile(caminhoImagem);
+	// 			} else if (imagem) {
+	// 				versao = Math.abs(versao) + 1;
+	// 				await sql.query("update arquetipo set versao = ? where id = ?", [versao, arquetipo.id]);
 
-                return null;
-            } catch (e) {
-                if (e.code === "ER_DUP_ENTRY") {
-                    if (e.message.includes("nome")) {
-                        return `O nome ${questionario.nome} já está em uso`;
-                    }
-                    return "Já existe um registro com dados duplicados";
-                }
-                throw e;
-            }
-        });
-    }
+	// 				await app.fileSystem.saveUploadedFile(caminhoImagem, imagem);
+	// 			}
 
-    public static async editar(questionario: Questionario): Promise<string | null> {
-        const res = Questionario.validar(questionario, false);
-        if (res)
-            return res;
+	// 			await sql.commit();
 
-        return app.sql.connect(async (sql) => {
-            try {
-                await sql.query("update questionario set nome=?, nomeexterno=?, iddisponibilidade=?, anonimo=?, url=?, descricao=?, corfundopagina=?, corfundocard=?, cordestaque=?, cortextocard=?, cortextodestaque=?, criacao=?, textointroducao=?, questoes=? where id = ?", [questionario.nome, questionario.nomeexterno, questionario.iddisponibilidade, questionario.anonimo, questionario.url, questionario.descricao, questionario.corfundopagina, questionario.corfundocard, questionario.cordestaque, questionario.cortextocard, questionario.cortextodestaque, questionario.criacao, questionario.textointroducao, questionario.questoes, questionario.id]);
+	// 			return versao;
+	// 		} catch (e) {
+	// 			if (e.code === "ER_DUP_ENTRY" && typeof e.message === "string") {
+	// 				if (e.message.includes("nomeexterno")) {
+	// 					return `O nome externo ${arquetipo.nomeexterno} já está em uso`;
+	// 				}
+	// 				if (e.message.includes("nome")) {
+	// 					return `O nome ${arquetipo.nome} já está em uso`;
+	// 				}
+	// 				return "Já existe um registro com dados duplicados";
+	// 			}
+	// 			throw e;
+	// 		}
 
-                if (!sql.affectedRows)
-                    return "Questionário não encontrado";
+	// 	});
+	// }
 
-                await Questionario.merge(sql, questionario.id, questionario.iddepartamento as number[], questionario.idarquetipos as number[], questionario.idpublicoalvo as number[]);
+	public static async excluir(id: number): Promise<string | null> {
+		return app.sql.connect(async (sql) => {
+			try {
+				await sql.query("delete from questionario where id = ?", [id]);
 
-                await sql.commit();
-
-                return null;
-            } catch (e) {
-                if (e.code === "ER_DUP_ENTRY" && typeof e.message === "string") {
-                    if (e.message.includes("nome")) {
-                        return `O nome ${questionario.nome} já está em uso`;
-                    }
-                    return "Já existe um registro com dados duplicados";
-                }
-                throw e;
-            }
-
-        });
-    }
-
-    public static async excluir(id: number): Promise<string | null> {
-        return app.sql.connect(async (sql) => {
-            try {
-                await sql.query("delete from questionario where id = ?", [id]);
-
-                return (sql.affectedRows ? null : "Questionário não encontrado");
-            } catch (e) {
-                if (e.code) {
-                    switch (e.code) {
-                        case "ER_ROW_IS_REFERENCED":
-                        case "ER_ROW_IS_REFERENCED_2":
-                            return "Questionário em uso";
-                        default:
-                            throw e;
-                    }
-                } else {
-                    throw e;
-                }
-            }
-        });
-    }
+				return (sql.affectedRows ? null : "Questionário não encontrado");
+			} catch (e) {
+				if (e.code) {
+					switch (e.code) {
+						case "ER_ROW_IS_REFERENCED":
+						case "ER_ROW_IS_REFERENCED_2":
+							return "Questionário em uso";
+						default:
+							throw e;
+					}
+				} else {
+					throw e;
+				}
+			}
+		});
+	}
 }
 
 export = Questionario;

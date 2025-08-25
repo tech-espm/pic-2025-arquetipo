@@ -1,16 +1,15 @@
+<input type="hidden" id="id" name="id" value="<%=(item ? item.id : 0) %>" />
+<input type="hidden" id="hiddentextointroducao" name="textointroducao" value="" />
+
 <div class="row">
-
-    <input type="hidden" id="id" name="id" value="<%=(item ? item.id : 0) %>" />
-
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="form-group">
             <label for="nome">Nome</label>
             <input id="nome" name="nome" maxlength="100" class="form-control" type="text" spellcheck="false"
                 value="<%=(item ? item.nome : '') %>" />
         </div>
     </div>
-
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="form-group">
             <label for="nomeexterno">Nome externo</label>
             <input id="nomeexterno" name="nomeexterno" maxlength="100" class="form-control" type="text"
@@ -18,6 +17,22 @@
         </div>
     </div>
 
+    <div class="col-md-4">
+        <div class="form-group">
+            <input type="hidden" id="iddepartamento" name="iddepartamento" />
+            <label for="iddepartamentoselect">Departamento</label>
+            <select id="iddepartamentoselect" class="form-control" size="1">
+                <% for (let i=0; i < departamentos.length; i++) { %>
+                    <option value="<%= departamentos[i].id %>">
+                        <%= departamentos[i].nome %>
+                    </option>
+                    <% } %>
+            </select>
+        </div>
+    </div>
+</div>
+
+<div class="row">
     <div class="col-md-4">
         <div class="form-group">
             <label for="iddisponibilidade">Disponibilidade do Link</label>
@@ -32,34 +47,34 @@
             </select>
         </div>
     </div>
-
     <div class="col-md-4">
         <div class="form-group">
             <label for="anonimo">Anônimo</label>
             <select id="anonimo" name="anonimo" class="form-control" size="1">
                 <option value="">Selecione...</option>
-                <option value="true" <%-((item && item.anonimo==true) ? 'selected="selected"' : '' ) %>> Sim
+                <option value="0" <%-((item && item.anonimo==0) ? 'selected="selected"' : '' ) %>> Sim
                 </option>
-                <option value="false" <%-((item && item.anonimo==false) ? 'selected="selected"' : '' ) %>>Não
+                <option value="1" <%-((item && item.anonimo==1) ? 'selected="selected"' : '' ) %>>Não
                 </option>
             </select>
         </div>
     </div>
-
     <div class="col-md-4">
         <div class="form-group">
-            <input type="hidden" id="idpublicoalvo" name="idpublicoalvo" />
+            <input type="hidden" id="idpublicosalvos" name="idpublicosalvos" />
             <label for="idpublicoalvoselect">Público-alvo</label>
-            <select id="idpublicoalvoselect"  class="form-control" size="1">
-                <% for (let i=0; i < publicos.length; i++) { %>
-                    <option value="<%= publicos[i].id %>">
-                        <%= publicos[i].nome %>
+            <select id="idpublicoalvoselect" class="form-control" size="1">
+                <% for (let i=0; i < publicosalvos.length; i++) { %>
+                    <option value="<%= publicosalvos[i].id %>">
+                        <%= publicosalvos[i].nome %>
                     </option>
                     <% } %>
             </select>
         </div>
     </div>
+</div>
 
+<div class="row">
     <div class="col-md-12">
         <div class="form-group">
             <label for="url">URL</label>
@@ -67,39 +82,36 @@
                 value="<%=(item ? item.url : '') %>" />
         </div>
     </div>
+</div>
 
-    
-    <div class="col-12">
+
+<div class="row">
+    <div class="col-12 mb-4">
         <div class="form-group">
             <label for="descricao">Descrição</label>
-            <input id="descricao" name="descricao" maxlength="255" class="form-control" type="text"
-                spellcheck="false" value="<%=(item ? item.descricao : '') %>" />
+            <input id="descricao" name="descricao" maxlength="255" class="form-control" type="text" spellcheck="false"
+                value="<%=(item ? item.descricao : '') %>" />
         </div>
     </div>
-    
-    <div class="col-md-12">
+</div>
+
+<div class="row">
+    <div class="col-12 mb-4">
         <div class="form-group">
-            <input type="hidden" id="iddepartamento" name="iddepartamento" />
-            <label for="iddepartamentoselect">Departamento</label>
-            <select id="iddepartamentoselect" class="form-control" size="1">
-                <% for (let i=0; i < departamentos.length; i++) { %>
-                    <option value="<%= departamentos[i].id %>">
-                        <%= departamentos[i].nome %>
-                    </option>
-                    <% } %>
-            </select>
+            <label for="textointroducao">Texto da introdução</label>
+            <div id="textointroducao" class="d-none"><%- (item ? item.textointroducao : '' ) %></div>
         </div>
     </div>
+</div>
 
-    <div class="col-12 mb-3 mt-3">
-        <hr>
-    </div>
-
+<div class="row">
     <div class="col-12 text-center mb-3">
         <h5>Aparência do Questionário</h5>
     </div>
+</div>
 
-    <div class="col-md-4">
+<div class="row">
+    <div class="col">
         <div class="form-group">
             <label for="corfundopagina">Cor do fundo da página</label>
             <input id="corfundopagina" name="corfundopagina" class="form-control" type="color" spellcheck="false"
@@ -107,7 +119,7 @@
         </div>
     </div>
 
-    <div class="col-md-4">
+    <div class="col">
         <div class="form-group">
             <label for="corfundocard">Cor do fundo do card</label>
             <input id="corfundocard" name="corfundocard" class="form-control" type="color" spellcheck="false"
@@ -115,7 +127,7 @@
         </div>
     </div>
 
-    <div class="col-md-4">
+    <div class="col">
         <div class="form-group">
             <label for="cortextocard">Cor do texto do card</label>
             <input id="cortextocard" name="cortextocard" class="form-control" type="color" spellcheck="false"
@@ -123,7 +135,7 @@
         </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col">
         <div class="form-group">
             <label for="cordestaque">Cor de destaque</label>
             <input id="cordestaque" name="cordestaque" class="form-control" type="color" spellcheck="false"
@@ -131,109 +143,283 @@
         </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col">
         <div class="form-group">
             <label for="cortextodestaque">Cor do texto do destaque</label>
             <input id="cortextodestaque" name="cortextodestaque" class="form-control" type="color" spellcheck="false"
                 value="<%=(item ? item.cortextodestaque : '') %>" />
         </div>
     </div>
-
 </div>
-<%- contentFor("scripts") %>
-    <script type="text/javascript">
-        //<![CDATA[
-        "use strict";
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="imagemintroducao">Imagem da Introdução</label>
+            <input id="imagemintroducao" name="imagemintroducao" class="form-control" type="file"
+                accept=".png, .jpg, .jpeg" />
+        </div>
+        <div class="form-group">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="1" name="excluir_imagem_introducao"
+                    id="chkExcluirImagemIntroducaoAtual" />
+                <label class="form-check-label" for="chkExcluirImagemIntroducaoAtual">
+                    Excluir Imagem da Introdução Atual
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 <%- ((item && item.versaointroducao > 0) ? '' : 'd-none') %>" id="divImagemIntroducao">
+        <div class="form-group">
+            <label for="imgIntroducao">Imagem da Introdução Atual</label>
+            <img id="imgIntroducao"
+                src="<%- staticRoot %>/img/questionario/introducao/<%- (item && item.id) %>.jpg?v=<%- (item && item.versaointroducao) %>"
+                style="display: block; width: 100%; max-width: 300px;" />
+        </div>
+        <a download target="_blank" class="btn btn-primary"
+            href="<%- staticRoot %>/img/questionario/introducao/<%- (item && item.id) %>.jpg?v=<%- (item && item.versaointroducao) %>"><i
+                class="fa fa-download"></i> Baixar Imagem da Introdução Atual</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="imagemquestionario">Imagem do Questionário</label>
+            <input id="imagemquestionario" name="imagemquestionario" class="form-control" type="file"
+                accept=".png, .jpg, .jpeg" />
+        </div>
+        <div class="form-group">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="1" name="excluir_imagem_questionario"
+                    id="chkExcluirImagemQuestionarioAtual" />
+                <label class="form-check-label" for="chkExcluirImagemQuestionarioAtual">
+                    Excluir Imagem do Questionário Atual
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 <%- ((item && item.versaoquestionario > 0) ? '' : 'd-none') %>" id="divImagemQuestionario">
+        <div class="form-group">
+            <label for="imgQuestionario">Imagem do Questionário Atual</label>
+            <img id="imgQuestionario"
+                src="<%- staticRoot %>/img/questionario/<%- (item && item.id) %>.jpg?v=<%- (item && item.versaoquestionario) %>"
+                style="display: block; width: 100%; max-width: 300px;" />
+        </div>
+        <a download target="_blank" class="btn btn-primary"
+            href="<%- staticRoot %>/img/questionario/<%- (item && item.id) %>.jpg?v=<%- (item && item.versaoquestionario) %>"><i
+                class="fa fa-download"></i> Baixar Imagem do Questionário Atual</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="imagemlogo">Imagem da Logo</label>
+            <input id="imagemlogo" name="imagemlogo" class="form-control" type="file" accept=".png, .jpg, .jpeg" />
+        </div>
+        <div class="form-group">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="1" name="excluir_imagem_logo"
+                    id="chkExcluirImagemLogoAtual" />
+                <label class="form-check-label" for="chkExcluirImagemLogoAtual">
+                    Excluir Imagem da Logo Atual
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 <%- ((item && item.versaologo > 0) ? '' : 'd-none') %>" id="divImagemLogo">
+        <div class="form-group">
+            <label for="imgLogo">Imagem da Logo Atual</label>
+            <img id="imgLogo"
+                src="<%- staticRoot %>/img/questionario/logo/<%- (item && item.id) %>.jpg?v=<%- (item && item.versaologo) %>"
+                style="display: block; width: 100%; max-width: 300px;" />
+        </div>
+        <a download target="_blank" class="btn btn-primary"
+            href="<%- staticRoot %>/img/questionario/logo/<%- (item && item.id) %>.jpg?v=<%- (item && item.versaologo) %>"><i
+                class="fa fa-download"></i> Baixar Imagem da Logo Atual</a>
+    </div>
+</div>
+
+<% if (item) { %>
+    <div class="row">
+
+        <div class="col-12">
+            <div class="form-group">
+                <input type="hidden" id="idarquetipos" name="idarquetipos" />
+                <label for="iddarquetiposselect">Arquétipo</label>
+                <select id="iddarquetiposselect" class="form-control" size="1">
+                    <% for (let i=0; i < arquetipos.length; i++) { %>
+                        <option value="<%= arquetipos[i].id %>">
+                            <%= arquetipos[i].nome %>
+                        </option>
+                        <% } %>
+                </select>
+            </div>
+        </div>
+    <% } %>
 
 
-        prepareMultiselect("#iddepartamentoselect", { title: "Departamento", label: "Departamento" });
+        <%- contentFor("scripts") %>
 
-        //<% if (item) { %>
-        setMultiselectSelection("#iddepartamentoselect", [<% - item.iddepartamento.map(d => d.iddepartamento).join(",") %>]);
-        //<% } %>
+            <link rel="stylesheet" type="text/css" href="<%- staticRoot %>/css/ckeditor.css" />
+            <script type="text/javascript" src="<%- staticRoot %>/lib/ckeditor/ckeditor.js"></script>
 
-        prepareMultiselect("#idpublicoalvoselect", { title: "Público-alvo", label: "Público-alvo" });
+            <script type="text/javascript">
+                //<![CDATA[
+                "use strict";
 
-        //<% if (item) { %>
-        setMultiselectSelection("#idpublicoalvoselect", [<% - item.idpublicoalvo.map(d => d.idpublicoalvo).join(",") %>]);
-        //<% } %>
+                CKEDITOR.replace("textointroducao");
 
-        $("#form").validate({
-            rules: {
-                nome: {
-                    required: true
-                },
-                nomeexterno: {
-                    required: true,
-                },
-                iddisponibilidade: {
-                    required: true,
-                },
-                anonimo: {
-                    required: true,
-                },
-                idpublicoalvo: {
-                    required: true,
-                },
-                url: {
-                    required: true,
-                    // url: true
-                },
-                descricao: {
-                    required: true,
-                },
-                iddepartamento: {
-                    required: true,
-                },
-                corfundopagina: {
-                    required: true,
-                },
-                corfundocard: {
-                    required: true,
-                },
-                cortextocard: {
-                    required: true,
-                },
-                cordestaque: {
-                    required: true,
-                },
-                cortextodestaque: {
-                    required: true,
-                }
+                prepareMultiselect("#iddepartamentoselect", { title: "Departamento", label: "Departamento" });
+                prepareMultiselect("#idpublicoalvoselect", { title: "Público-alvo", label: "Público-alvo" });
 
-            },
-
-            submitHandler: function (form) {
-                if (JsonWebApi.active)
-                    return;
-
-                Swal.wait();
-
-                $("#iddepartamento").val(getMultiselectSelection("#iddepartamentoselect").join(","));
-                $("#idpublicoalvo").val(getMultiselectSelection("#idpublicoalvoselect").join(","));
-                form.anonimo = $("#anonimo").val() === "true " ? true : false;
 
                 //<% if (item) { %>
 
-                JsonWebApi.postFormData("<%- root %>/api/questionario/editar", form, function (response) {
-                    if (response.success)
-                        Swal.success("Arquetipo alterado com sucesso! " + emoji.happy);
-                    else
-                        Swal.error(response.value + " " + emoji.sad);
-                });
+                setMultiselectSelection("#iddepartamentoselect", [<% - item.iddepartamento.map(d => d.iddepartamento).join(",") %>]);
+                setMultiselectSelection("#idpublicoalvoselect", [<% - item.idpublicosalvos.map(d => d.idpublicoalvo).join(",") %>]);
 
-                //<% } else { %>
+                prepareMultiselect("#iddarquetiposselect", { title: "Arquétipo", label: "Arquétipo" });
+                setMultiselectSelection("#iddarquetiposselect", [<% - item.idarquetipos.map(d => d.idarquetipo).join(",") %>]);
 
-                JsonWebApi.postFormData("<%- root %>/api/questionario/criar", form, function (response) {
-                    if (response.success) {
-                        Swal.success("Arquetipo criado com sucesso! " + emoji.happy);
-                    } else {
-                        Swal.error(response.value + " " + emoji.sad);
-                    }
-                });
+
+
 
                 //<% } %>
-            }
-        });
-        //]]>
-    </script>
+
+                $("#form").validate({
+                    rules: {
+                        nome: {
+                            required: true
+                        },
+                        nomeexterno: {
+                            required: true,
+                        },
+                        iddisponibilidade: {
+                            required: true,
+                        },
+                        anonimo: {
+                            required: true,
+                        },
+                        idpublicoalvo: {
+                            required: true,
+                        },
+                        url: {
+                            required: true,
+                            // url: true
+                        },
+                        descricao: {
+                            required: true,
+                        },
+                        iddepartamento: {
+                            required: true,
+                        },
+                        corfundopagina: {
+                            required: true,
+                        },
+                        corfundocard: {
+                            required: true,
+                        },
+                        cortextocard: {
+                            required: true,
+                        },
+                        cordestaque: {
+                            required: true,
+                        },
+                        cortextodestaque: {
+                            required: true,
+                        },
+                        imagemintroducao: {
+                            tamanhoArquivoMaximoKiB: 1024,
+                        },
+                        imagemquestionario: {
+                            tamanhoArquivoMaximoKiB: 1024,
+                        },
+                        imagemlogo: {
+                            tamanhoArquivoMaximoKiB: 1024,
+                        },
+                        idarquetipos: {
+                            required: true
+                        }
+                    },
+
+                    submitHandler: function (form) {
+                        if (JsonWebApi.active)
+                            return;
+
+                        Swal.wait();
+
+                        $("#iddepartamento").val(getMultiselectSelection("#iddepartamentoselect").join(","));
+                        $("#idpublicosalvos").val(getMultiselectSelection("#idpublicoalvoselect").join(","));
+                        $("#hiddentextointroducao").val(CKEDITOR.instances.textointroducao.getData());
+
+
+                        //<% if (item) { %>
+
+                        $("#idarquetipos").val(getMultiselectSelection("#iddarquetiposselect").join(","));
+
+
+                        JsonWebApi.postFormData("<%- root %>/api/questionario/editar", new FormData(form), function (response) {
+                            if (response.success) {
+
+                                const imagemIntroducao = document.getElementById("imagemintroducao");
+                                const chkExcluirImagemIntroducaoAtual = document.getElementById("chkExcluirImagemIntroducaoAtual");
+                                const imagemQuestionario = document.getElementById("imagemquestionario");
+                                const chkExcluirImagemQuestionarioAtual = document.getElementById("chkExcluirImagemQuestionarioAtual");
+                                const imagemLogo = document.getElementById("imagemlogo");
+                                const chkExcluirImagemLogoAtual = document.getElementById("chkExcluirImagemLogoAtual");
+
+                                if (imagemIntroducao.value) {
+                                    imagemIntroducao.value = "";
+                                    $("#imgIntroducao").attr("src", "<%- staticRoot %>/img/questionario/introducao/<%- (item && item.id) %>.jpg?v=" + response.value);
+                                    $("#divImagemIntroducao").removeClass("d-none");
+                                } else if (chkExcluirImagemIntroducaoAtual.checked) {
+                                    $("#divImagemIntroducao").addClass("d-none");
+                                }
+
+                                if (imagemQuestionario.value) {
+                                    imagemQuestionario.value = "";
+                                    $("#imgQuestionario").attr("src", "<%- staticRoot %>/img/questionario/<%- (item && item.id) %>.jpg?v=" + response.value);
+                                    $("#divImagemQuestionario").removeClass("d-none");
+                                } else if (chkExcluirImagemQuestionarioAtual.checked) {
+                                    $("#divImagemQuestionario").addClass("d-none");
+                                }
+
+                                if (imagemLogo.value) {
+                                    imagemLogo.value = "";
+                                    $("#imgLogo").attr("src", "<%- staticRoot %>/img/questionario/logo/<%- (item && item.id) %>.jpg?v=" + response.value);
+                                    $("#divImagemLogo").removeClass("d-none");
+
+                                } else if (chkExcluirImagemLogoAtual.checked) {
+                                    $("#divImagemLogo").addClass("d-none");
+                                }
+
+                                chkExcluirImagemQuestionarioAtual.checked = false;
+                                chkExcluirImagemLogoAtual.checked = false;
+                                chkExcluirImagemIntroducaoAtual.checked = false;
+                                Swal.success("Questionário alterado com sucesso! " + emoji.happy);
+                            }
+                            else
+                                Swal.error(response.value + " " + emoji.sad);
+                        });
+
+                        //<% } else { %>
+
+                        JsonWebApi.postFormData("<%- root %>/api/questionario/criar", new FormData(form), function (response) {
+                            if (response.success) {
+                                CKEDITOR.instances.textointroducao.setData("");
+                                resetForm("#form");
+                                Swal.success("Questionário criado com sucesso! " + emoji.happy).then(() => {
+                                    JsonWebApi.redirect("<%- root %>/questionario/editar?id=" + response.value);
+                                });
+                            } else {
+                                Swal.error(response.value + " " + emoji.sad);
+                            }
+                        });
+
+                        //<% } %>
+                    }
+                });
+                //]]>
+            </script>

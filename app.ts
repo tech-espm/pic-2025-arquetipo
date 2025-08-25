@@ -1,6 +1,8 @@
 ﻿import app = require("teem");
 import appsettings = require("./appsettings");
 import Perfil = require("./enums/perfil");
+import Disponibilidade = require("./enums/disponibilidade");
+import Publico = require("./enums/publico");
 
 app.run({
 	root: appsettings.root,
@@ -9,6 +11,8 @@ app.run({
 
 	onInit: function () {
 		app.express.locals.Perfil = Perfil;
+		app.express.locals.Disponibilidade = Disponibilidade;
+		app.express.locals.Publico = Publico;
 	},
 
 	htmlErrorHandler: function (err: any, req: app.Request, res: app.Response, next: app.NextFunction) {

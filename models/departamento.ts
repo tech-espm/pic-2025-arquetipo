@@ -42,6 +42,16 @@ class Departamento {
 		});
 	}
 
+	public static listarPorQuestionario(idquestionario: number): Promise<Departamento[]> {
+		return app.sql.connect(async (sql) => {
+
+				const lista: Departamento[] = await sql.query(`select d.id, d.nome from questionario_departamento qd
+																inner join departamento d on qd.iddepartamento = d.id
+																where qd.idquestionario = ?`, [idquestionario]);
+				return lista || [];
+		});
+	}
+
 	public static obter(id: number): Promise<Departamento | null>;
 	public static obter(id: number[]): Promise<Departamento[]>;
 	public static obter(id: number | number[]): Promise<Departamento | Departamento[] | null> {

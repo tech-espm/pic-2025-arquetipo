@@ -1,6 +1,4 @@
 import app = require("teem");
-import Departamento = require("../../models/departamento");
-import Perfil = require("../../enums/perfil");
 import Usuario = require("../../models/usuario");
 import Arquetipo = require("../../models/arquetipo");
 

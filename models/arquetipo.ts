@@ -1,11 +1,4 @@
 ﻿import app = require("teem");
-import { randomBytes } from "crypto";
-import appsettings = require("../appsettings");
-import DataUtil = require("../utils/dataUtil");
-import GeradorHash = require("../utils/geradorHash");
-import intToHex = require("../utils/intToHex");
-import Perfil = require("../enums/perfil");
-import Validacao = require("../utils/validacao");
 
 interface Arquetipo {
 	id: number;
@@ -70,19 +63,42 @@ class Arquetipo {
 		});
 	}
 
-	public static obter(id: number): Promise<Arquetipo> {
+	public static obter(id: number): Promise<Arquetipo | null>;
+	public static obter(id: number[]): Promise<Arquetipo[]>;
+	public static obter(id: number | number[]): Promise<Arquetipo | Arquetipo[] | null> {
 		return app.sql.connect(async (sql) => {
-			const lista: Arquetipo[] = await sql.query("select id, nome, nomeexterno, descricaocurta, descricaocompleta, versao from arquetipo where id = ?", [id]);
+			if (id instanceof Array) {
+				if (id.length === 0) return [];
+				const lista: Arquetipo[] = await sql.query(`select id, nome, nomeexterno, descricaocurta, descricaocompleta from arquetipo where id in (?)`, [id]);
 
-			if (!lista || !lista[0])
-				return null;
+				for (let x = 0; x < lista.length;x++){
+					lista[x].iddepartamento = await sql.query("select iddepartamento from arquetipo_departamento where idarquetipo = ?", [id]);
+				}
 
-			const arquetipo = lista[0];
-			arquetipo.iddepartamento = await sql.query("select iddepartamento from arquetipo_departamento where idarquetipo = ?", [id]);
+				return lista || [];
+			} else {
+				const lista: Arquetipo[] = await sql.query("select id, nome, nomeexterno, descricaocurta, descricaocompleta from arquetipo where id = ?", [id]);
+				if (!lista || !lista[0])
+					return null;
 
-			return lista[0];
+				lista[0].iddepartamento = await sql.query("select iddepartamento from arquetipo_departamento where idarquetipo = ?", [id]);
+				return lista[0];
+			}
 		});
 	}
+
+		public static listarPorDepartamentos(iddepartamento: number[]): Promise<Arquetipo[]> {
+			return app.sql.connect(async (sql) => {
+					if (!iddepartamento || iddepartamento.length == 0)
+						return [];
+					const ids = [];
+					iddepartamento.forEach((v, i) => {
+						ids.push(v["iddepartamento"]);
+					});
+					const lista: Arquetipo[] = await sql.query(`select distinct a.id, a.nome from arquetipo_departamento ad inner join arquetipo a on ad.idarquetipo = a.id where iddepartamento in (?)`, [ids]);
+					return lista || [];
+			});
+		}
 
 	public static obterPeloNome(nome: string): Promise<Arquetipo> {
 		return app.sql.connect(async (sql) => {
