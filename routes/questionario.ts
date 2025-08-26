@@ -90,12 +90,13 @@ class QuestionarioRoute {
 
 		res.render("questionario/editar", {
 			titulo: "Editar Questionário",
+			datatables: true,
 			usuario: u,
 			departamentos: departamentos,
 			publicosalvos: publicos.lista,
 			disponibilidades: disponibilidades.lista,
 			arquetipos: arquetipos,
-			item: item,
+			item: item
 		});
 
 	}

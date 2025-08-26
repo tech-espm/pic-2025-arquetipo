@@ -5,14 +5,18 @@ import Usuario = require("../models/usuario");
 class IndexRoute {
 	public static async index(req: app.Request, res: app.Response) {
 		let u = await Usuario.cookie(req);
-		if (!u)
-			res.redirect(app.root + "/login");
-		else
+		
+		const query = req.query;
+		if (!query){
+			if (!u) res.redirect(app.root + "/login");
+			
 			res.render("index/index", {
-				layout: "layout-sem-form",
-				titulo: "Dashboard",
-				usuario: u
-			});
+			layout: "layout-sem-form",
+			titulo: "Dashboard",
+			usuario: u});
+		}else{
+			
+		}
 	}
 
 	@app.http.all()

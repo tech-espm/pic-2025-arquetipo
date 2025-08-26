@@ -110,7 +110,7 @@ class Questionario {
 
 	public static obter(id: number): Promise<Questionario> {
 		return app.sql.connect(async (sql) => {
-			const lista: Questionario[] = await sql.query("select id, nome,nomeexterno,iddisponibilidade,anonimo,url,descricao,textointroducao,corfundopagina,corfundocard,cordestaque,cortextocard,cortextodestaque, versaointroducao, versaoquestionario, versaologo from questionario where id = ?", [id]);
+			const lista: Questionario[] = await sql.query("select id, nome,nomeexterno,iddisponibilidade,anonimo,url,descricao,textointroducao,corfundopagina,corfundocard,cordestaque,cortextocard,cortextodestaque, questoes,versaointroducao, versaoquestionario, versaologo from questionario where id = ?", [id]);
 
 			if (!lista || !lista[0])
 				return null;
@@ -294,7 +294,8 @@ class Questionario {
 					corfundocard = ?,
 					cortextocard = ?,
 					cordestaque = ?,
-					cortextodestaque = ?
+					cortextodestaque = ?,
+					questoes = ?
 				where id = ?
 			`, [
 					questionario.nome,
@@ -309,6 +310,7 @@ class Questionario {
 					questionario.cortextocard,
 					questionario.cordestaque,
 					questionario.cortextodestaque,
+					questionario.questoes,
 					questionario.id
 				]);
 
