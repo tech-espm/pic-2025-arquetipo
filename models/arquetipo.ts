@@ -87,15 +87,9 @@ class Arquetipo {
 		});
 	}
 
-		public static listarPorDepartamentos(iddepartamento: number[]): Promise<Arquetipo[]> {
+		public static listarPorDepartamento(iddepartamento: number): Promise<Arquetipo[]> {
 			return app.sql.connect(async (sql) => {
-					if (!iddepartamento || iddepartamento.length == 0)
-						return [];
-					const ids = [];
-					iddepartamento.forEach((v, i) => {
-						ids.push(v["iddepartamento"]);
-					});
-					const lista: Arquetipo[] = await sql.query(`select distinct a.id, a.nome from arquetipo_departamento ad inner join arquetipo a on ad.idarquetipo = a.id where iddepartamento in (?)`, [ids]);
+					const lista: Arquetipo[] = await sql.query(`select distinct a.id, a.nome from arquetipo_departamento ad inner join arquetipo a on ad.idarquetipo = a.id where iddepartamento in (?)`, [iddepartamento]);
 					return lista || [];
 			});
 		}

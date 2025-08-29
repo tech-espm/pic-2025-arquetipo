@@ -108,6 +108,7 @@ CREATE TABLE questionario (
   nome VARCHAR(100) NOT NULL,
   nomeexterno VARCHAR(100) NOT NULL,
   iddisponibilidade INT NOT NULL,
+  iddepartamento INT NOT NULL,
   anonimo BOOLEAN NOT NULL,
   url VARCHAR(100) NOT NULL,
   descricao TEXT NOT NULL,
@@ -126,20 +127,20 @@ CREATE TABLE questionario (
   UNIQUE KEY questionario_nome_UN (nome),
   UNIQUE KEY questionario_nomeexterno_UN (nomeexterno),
   UNIQUE KEY questionario_url_UN (url),
-  CONSTRAINT questionario_iddisponibilidade_fk FOREIGN KEY (iddisponibilidade) REFERENCES disponibilidade(id)
-    ON DELETE RESTRICT ON UPDATE RESTRICT
+  CONSTRAINT questionario_iddisponibilidade_fk FOREIGN KEY (iddisponibilidade) REFERENCES disponibilidade(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT questionario_iddepartamento_fk FOREIGN KEY (id) REFERENCES departamento(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
 
 -- DROP TABLE IF EXISTS questionario_departamento;
-CREATE TABLE questionario_departamento (
-  id INT NOT NULL AUTO_INCREMENT,
-  idquestionario INT NOT NULL,
-  iddepartamento INT NOT NULL,
-  PRIMARY KEY (id),
-  UNIQUE KEY uq_questionario_departamento (idquestionario, iddepartamento),
-  CONSTRAINT fk_qd_questionario FOREIGN KEY (idquestionario) REFERENCES questionario(id) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_qd_departamento FOREIGN KEY (iddepartamento) REFERENCES departamento(id) ON DELETE RESTRICT ON UPDATE RESTRICT
-);
+-- CREATE TABLE questionario_departamento (
+--   id INT NOT NULL AUTO_INCREMENT,
+--   idquestionario INT NOT NULL,
+--   iddepartamento INT NOT NULL,
+--   PRIMARY KEY (id),
+--   UNIQUE KEY uq_questionario_departamento (idquestionario, iddepartamento),
+--   CONSTRAINT fk_qd_questionario FOREIGN KEY (idquestionario) REFERENCES questionario(id) ON DELETE CASCADE ON UPDATE CASCADE,
+--   CONSTRAINT fk_qd_departamento FOREIGN KEY (iddepartamento) REFERENCES departamento(id) ON DELETE RESTRICT ON UPDATE RESTRICT
+-- );
 
 -- DROP TABLE IF EXISTS questionario_publicoalvo;
 CREATE TABLE questionario_publicoalvo (

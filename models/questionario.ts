@@ -5,6 +5,7 @@ interface Questionario {
 	nome: string;
 	nomeexterno: string;
 	iddisponibilidade: number;
+	iddepartamento: number;
 	anonimo: boolean;
 	url: string;
 	descricao: string;
@@ -22,7 +23,6 @@ interface Questionario {
 
 
 	//usado apenas no obter
-	iddepartamento: number[] | string | null;
 	idpublicosalvos: number[] | string | null;
 	idarquetipos: number[] | string | null;
 }
@@ -73,9 +73,11 @@ class Questionario {
 		if (!questionario.iddisponibilidade || isNaN(parseInt(questionario.iddisponibilidade as any)))
 			return "Disponibilidade inválida";
 
+		if (!questionario.iddepartamento || isNaN(parseInt(questionario.iddepartamento as any)))
+			return "Disponibilidade inválida";
+
 		// Validação dos relacionamentos - obg gpt
 		const relacionamentos = {
-			"iddepartamento": "Departamento inválido",
 			"idpublicosalvos": "Público-alvo inválido",
 			"idarquetipos": "Arquétipo inválido"
 		};
@@ -98,25 +100,24 @@ class Questionario {
 
 	public static listar(): Promise<Questionario[]> {
 		return app.sql.connect(async (sql) => {
-			return (await sql.query("select id, nome,nomeexterno,iddisponibilidade,anonimo,url,descricao,criacao from questionario")) || [];
+			return (await sql.query("select id, nome,nomeexterno,iddisponibilidade,iddepartamento,anonimo,url,descricao,criacao from questionario")) || [];
 		});
 	}
 
 	public static listarCombo(): Promise<Questionario[]> {
 		return app.sql.connect(async (sql) => {
-			return (await sql.query("select id, nome,nomeexterno,iddisponibilidade,anonimo,url,descricao,criacao from questionario order by nome asc")) || [];
+			return (await sql.query("select id, nome,nomeexterno,iddisponibilidade,iddepartamento,anonimo,url,descricao,criacao from questionario order by nome asc")) || [];
 		});
 	}
 
 	public static obter(id: number): Promise<Questionario> {
 		return app.sql.connect(async (sql) => {
-			const lista: Questionario[] = await sql.query("select id, nome,nomeexterno,iddisponibilidade,anonimo,url,descricao,textointroducao,corfundopagina,corfundocard,cordestaque,cortextocard,cortextodestaque, questoes,versaointroducao, versaoquestionario, versaologo from questionario where id = ?", [id]);
+			const lista: Questionario[] = await sql.query("select id, nome,nomeexterno,iddisponibilidade,iddepartamento,anonimo,url,descricao,textointroducao,corfundopagina,corfundocard,cordestaque,cortextocard,cortextodestaque, questoes,versaointroducao, versaoquestionario, versaologo from questionario where id = ?", [id]);
 
 			if (!lista || !lista[0])
 				return null;
 
 			const questionario = lista[0];
-			questionario.iddepartamento = await sql.query("select iddepartamento from questionario_departamento where idquestionario = ?", [id]);
 
 			questionario.idpublicosalvos = await sql.query("select idpublicoalvo from questionario_publicoalvo where idquestionario = ?", [id]);
 
@@ -126,30 +127,24 @@ class Questionario {
 		});
 	}
 
-	private static async merge(sql: app.Sql, id: number, departamentos: number[] | null, arquetipos: number[] | null, publicosalvos: number[] | null) {
-		if (!departamentos)
-			departamentos = [];
+		public static async obterPorUrl(url: string): Promise<Questionario | null> {
+		return app.sql.connect(async (sql) => {
+			const lista: Questionario[] = await sql.query("select id, nomeexterno,iddisponibilidade,iddepartamento,anonimo,url,descricao,textointroducao,corfundopagina,corfundocard,cordestaque,cortextocard,cortextodestaque, questoes,versaointroducao, versaoquestionario, versaologo from questionario where url = ?", [url]);
 
-		const existentesDepartamentos: { id: number, iddepartamento: number }[] = await sql.query(`SELECT id, iddepartamento FROM questionario_departamento WHERE idquestionario = ?`, [id]);
-		const toRemoveDepartamentos = existentesDepartamentos.filter(e => !(departamentos as number[]).includes(e.iddepartamento));
-		const toAddDepartamentos = departamentos.filter(n => !existentesDepartamentos.some(e => e.iddepartamento === n));
-		const toUpdateDepartamentos: typeof existentesDepartamentos = [];
+			if (!lista || !lista[0])
+				return null;
 
-		while (toRemoveDepartamentos.length && toAddDepartamentos.length) {
-			const item = toRemoveDepartamentos.pop() as typeof existentesDepartamentos[number];
-			item.iddepartamento = toAddDepartamentos.pop() as number;
-			toUpdateDepartamentos.push(item);
-		}
+			const questionario = lista[0];
 
-		for (let i = 0; i < toRemoveDepartamentos.length; i++)
-			await sql.query(`DELETE FROM questionario_departamento WHERE id = ?`, [toRemoveDepartamentos[i].id]);
+			questionario.idpublicosalvos = await sql.query("select idpublicoalvo from questionario_publicoalvo where idquestionario = ?", [questionario.id]);
 
-		for (let i = 0; i < toUpdateDepartamentos.length; i++)
-			await sql.query(`UPDATE questionario_departamento SET iddepartamento = ? WHERE id = ?`, [toUpdateDepartamentos[i].iddepartamento, toUpdateDepartamentos[i].id]);
+			questionario.idarquetipos = await sql.query("select idarquetipo from questionario_arquetipo where idquestionario = ?", [questionario.id]);
 
-		for (let i = 0; i < toAddDepartamentos.length; i++)
-			await sql.query(`INSERT INTO questionario_departamento (idquestionario, iddepartamento) VALUES (?, ?)`, [id, toAddDepartamentos[i]]);
+			return questionario;
+		});
+	}
 
+	private static async merge(sql: app.Sql, id: number, arquetipos: number[] | null, publicosalvos: number[] | null) {
 
 		if (!arquetipos)
 			arquetipos = [];
@@ -220,11 +215,11 @@ class Questionario {
 			await sql.beginTransaction();
 
 			try {
-				await sql.query("insert into questionario (nome, nomeexterno, iddisponibilidade, anonimo, url, descricao, corfundopagina, corfundocard, cordestaque, cortextocard, cortextodestaque, criacao, textointroducao, versaointroducao, versaoquestionario, versaologo) values (?,?,?,?,?,?,?,?,?,?,?,NOW(),?,?,?,?)", [questionario.nome, questionario.nomeexterno, questionario.iddisponibilidade, questionario.anonimo, questionario.url, questionario.descricao, questionario.corfundopagina, questionario.corfundocard, questionario.cordestaque, questionario.cortextocard, questionario.cortextodestaque, questionario.textointroducao, imagemintroducao ? 1 : 0, imagemquestionario ? 1 : 0, imagemlogo ? 1 : 0]);
+				await sql.query("insert into questionario (nome, nomeexterno, iddisponibilidade, iddepartamento, anonimo, url, descricao, corfundopagina, corfundocard, cordestaque, cortextocard, cortextodestaque, criacao, textointroducao, versaointroducao, versaoquestionario, versaologo) values (?,?,?,?,?,?,?,?,?,?,?,?,NOW(),?,?,?,?)", [questionario.nome, questionario.nomeexterno, questionario.iddisponibilidade, questionario.iddepartamento, questionario.anonimo, questionario.url, questionario.descricao, questionario.corfundopagina, questionario.corfundocard, questionario.cordestaque, questionario.cortextocard, questionario.cortextodestaque, questionario.textointroducao, imagemintroducao ? 1 : 0, imagemquestionario ? 1 : 0, imagemlogo ? 1 : 0]);
 
 				questionario.id = (await sql.scalar("select last_insert_id()")) as number;
 
-				await Questionario.merge(sql, questionario.id, questionario.iddepartamento as number[], questionario.idarquetipos as number[], questionario.idpublicosalvos as number[]);
+				await Questionario.merge(sql, questionario.id, questionario.idarquetipos as number[], questionario.idpublicosalvos as number[]);
 
 				if (imagemintroducao)
 					await app.fileSystem.saveUploadedFile("public/img/questionario/introducao/" + questionario.id + ".jpg", imagemintroducao);
@@ -285,6 +280,7 @@ class Questionario {
 				update questionario set
 					nome = ?,
 					nomeexterno = ?,
+					iddepartamento = ?,
 					descricao = ?,
 					url = ?,
 					textointroducao = ?,
@@ -300,6 +296,7 @@ class Questionario {
 			`, [
 					questionario.nome,
 					questionario.nomeexterno,
+					questionario.iddepartamento,
 					questionario.descricao,
 					questionario.url,
 					questionario.textointroducao,
@@ -317,15 +314,14 @@ class Questionario {
 				if (!sql.affectedRows)
 					return "Questionário não encontrado";
 
-				await Questionario.merge(sql, questionario.id, questionario.iddepartamento as number[], questionario.idarquetipos as number[], questionario.idpublicosalvos as number[]);
+				await Questionario.merge(sql, questionario.id, questionario.idarquetipos as number[], questionario.idpublicosalvos as number[]);
 
-				let versaoIntroducao: number = await sql.scalar("select versaointroducao from questionario where id = ?", [questionario.id]);
-				let versaoQuestionario: number = await sql.scalar("select versaoquestionario from questionario where id = ?", [questionario.id]);
-				let versaoLogo: number = await sql.scalar("select versaologo from questionario where id = ?", [questionario.id]);
-				// obg gpt 
-				versaoIntroducao = await Questionario.atualizarImagem(sql, `public/img/questionario/introducao/${questionario.id}.jpg`, imagemintroducao, versaoIntroducao, !!questionario.excluir_imagem_introducao, "questionario", "versaointroducao", questionario.id);
-				versaoQuestionario = await Questionario.atualizarImagem(sql, `public/img/questionario/${questionario.id}.jpg`, imagemquestionario, versaoQuestionario, !!questionario.excluir_imagem_questionario, "questionario", "versaoquestionario", questionario.id);
-				versaoLogo = await Questionario.atualizarImagem(sql, `public/img/questionario/logo/${questionario.id}.jpg`, imagemlogo, versaoLogo, !!questionario.excluir_imagem_logo, "questionario", "versaologo", questionario.id);
+
+				const campos =["introducao", "questionario", "logo"];
+				
+				await Questionario.atualizarImagem(sql,campos, `public/img/questionario/introducao/${questionario.id}.jpg`, imagemintroducao, !!questionario.excluir_imagem_introducao, questionario.id);
+				await Questionario.atualizarImagem(sql,campos, `public/img/questionario/${questionario.id}.jpg`, imagemquestionario, !!questionario.excluir_imagem_questionario, questionario.id);
+				await Questionario.atualizarImagem(sql,campos, `public/img/questionario/logo/${questionario.id}.jpg`, imagemlogo, !!questionario.excluir_imagem_logo, questionario.id);
 
 
 				await sql.commit();
@@ -346,21 +342,54 @@ class Questionario {
 		});
 	}
 
-	private static async atualizarImagem(sql: app.Sql, caminho: string, imagem: app.UploadedFile | null | undefined, versaoAtual: number, excluir: boolean, tabela: string, campoVersao: string, id: number): Promise<number> {
-		if (excluir) {
+	private static async atualizarImagem(sql: app.Sql, campos: string[],caminho: string, imagem: app.UploadedFile | null | undefined, excluir: boolean, id: number) {
+		for (let campo in campos){
+			let versaoAtual: number = await sql.scalar(`select versao${campo} from questionario where id = ?`, [id]);
+
+			if (excluir) {
 			versaoAtual = -(Math.abs(versaoAtual) + 1);
-			await sql.query(`UPDATE ${tabela} SET ${campoVersao} = ? WHERE id = ?`, [versaoAtual, id]);
+			await sql.query(`UPDATE questionario SET ${campo} = ? WHERE id = ?`, [versaoAtual, id]);
 
 			if (await app.fileSystem.exists(caminho)) {
 				await app.fileSystem.deleteFile(caminho);
 			}
-		} else if (imagem) {
+			} else if (imagem) {
 			versaoAtual = Math.abs(versaoAtual) + 1;
-			await sql.query(`UPDATE ${tabela} SET ${campoVersao} = ? WHERE id = ?`, [versaoAtual, id]);
+			await sql.query(`UPDATE questionario SET versao${campo} = ? WHERE id = ?`, [versaoAtual, id]);
 			await app.fileSystem.saveUploadedFile(caminho, imagem);
+			}	
 		}
-		return versaoAtual;
 	}
+
+	public static async excluir(id: number): Promise<string | null> {
+		return app.sql.connect(async (sql) => {
+			try {
+				await sql.query("delete from questionario where id = ?", [id]);
+
+				return (sql.affectedRows ? null : "Questionário não encontrado");
+			} catch (e) {
+				if (e.code) {
+					switch (e.code) {
+						case "ER_ROW_IS_REFERENCED":
+						case "ER_ROW_IS_REFERENCED_2":
+							return "Questionário em uso";
+						default:
+							throw e;
+					}
+				} else {
+					throw e;
+				}
+			}
+		});
+	}
+
+
+}
+
+export = Questionario;
+
+
+
 
 
 	// public static async editar(arquetipo: Arquetipo, imagem?: app.UploadedFile | null): Promise<string | number> {
@@ -420,28 +449,3 @@ class Questionario {
 
 	// 	});
 	// }
-
-	public static async excluir(id: number): Promise<string | null> {
-		return app.sql.connect(async (sql) => {
-			try {
-				await sql.query("delete from questionario where id = ?", [id]);
-
-				return (sql.affectedRows ? null : "Questionário não encontrado");
-			} catch (e) {
-				if (e.code) {
-					switch (e.code) {
-						case "ER_ROW_IS_REFERENCED":
-						case "ER_ROW_IS_REFERENCED_2":
-							return "Questionário em uso";
-						default:
-							throw e;
-					}
-				} else {
-					throw e;
-				}
-			}
-		});
-	}
-}
-
-export = Questionario;
