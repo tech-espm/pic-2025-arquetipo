@@ -416,6 +416,8 @@ window.prepareColumnPicker = function (dt, parentId, columnPicker) {
 						else
 							localStorage.setItem(options.persistId, JSON.stringify(persist));
 					}
+
+					dt.draw();
 				}
 			});
 
@@ -434,6 +436,7 @@ window.prepareColumnPicker = function (dt, parentId, columnPicker) {
 window.prepareDataTable = function (id, opt) {
 	var el = _(id), dt, div, o = (opt || {}), f, fullName = "dataTable_PageLength_", removeDom = o.customRemoveDom;
 
+	/*
 	if (id === "dataTableMain") {
 		f = window.location.href;
 		if (!f || (dt = f.lastIndexOf('/')) <= 0) {
@@ -447,6 +450,8 @@ window.prepareDataTable = function (id, opt) {
 	} else {
 		fullName += id;
 	}
+	*/
+	fullName += window.location.pathname + id;
 
 	if (removeDom === "f") {
 		//https://datatables.net/reference/option/dom
@@ -495,11 +500,16 @@ window.prepareDataTable = function (id, opt) {
 		};
 	}
 
-	if (removeDom !== "l")
+	if (removeDom !== "l") {
 		o.lengthMenu = (o.removeAll ?
 			[[4, 10, 25, 50, 100, 200], [4, 10, 25, 50, 100, 200]] :
 			[[4, 10, 25, 50, 100, 200, -1], [4, 10, 25, 50, 100, 200, (window.currentLanguageId === 1 ? "All" : "Todos")]]
 		);
+		if (o.lengthMenu[0].indexOf(o.pageLength) < 0) {
+			o.pageLength = 10;
+			localStorage[fullName] = 10;
+		}
+	}
 
 	if (typeof o.columnPicker === "object" && o.columnPicker.persist) {
 		const persistId = (("localStorage" in window) ? (location.host + location.pathname + "#" + id) : null);

@@ -69,7 +69,7 @@ class Arquetipo {
 		return app.sql.connect(async (sql) => {
 			if (id instanceof Array) {
 				if (id.length === 0) return [];
-				const lista: Arquetipo[] = await sql.query(`select id, nome, nomeexterno, versao,descricaocurta, descricaocompleta from arquetipo where id in (?)`, [id]);
+				const lista: Arquetipo[] = await sql.query(`select id, nome, nomeexterno, versao, descricaocurta, descricaocompleta from arquetipo where id in (?)`, [id]);
 
 				for (let x = 0; x < lista.length;x++){
 					lista[x].iddepartamento = await sql.query("select iddepartamento from arquetipo_departamento where idarquetipo = ?", [id]);
@@ -77,7 +77,7 @@ class Arquetipo {
 
 				return lista || [];
 			} else {
-				const lista: Arquetipo[] = await sql.query("select id, nome, nomeexterno, descricaocurta, descricaocompleta from arquetipo where id = ?", [id]);
+				const lista: Arquetipo[] = await sql.query("select id, nome, nomeexterno, versao, descricaocurta, descricaocompleta from arquetipo where id = ?", [id]);
 				if (!lista || !lista[0])
 					return null;
 

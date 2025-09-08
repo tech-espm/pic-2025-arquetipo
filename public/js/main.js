@@ -42,6 +42,28 @@ window.cancelEvent = function (evt) {
 	}
 	return false;
 };
+window.zeroObject = function (o, includeFunctions) {
+	for (let p in o) {
+		switch (typeof o[p]) {
+			case "function":
+				if (includeFunctions)
+					o[p] = null;
+				break;
+			case "boolean":
+				o[p] = false;
+				break;
+			case "number":
+				o[p] = 0;
+				break;
+			default:
+				const v = o[p];
+				if (Array.isArray(v))
+					v.fill(null);
+				o[p] = null;
+				break;
+		}
+	}
+};
 window.parseQueryString = function () {
 	var i, pair, assoc = {}, keyValues = location.search.substring(1).split("&");
 	for (i in keyValues) {
@@ -1376,6 +1398,21 @@ window.capitalizarFrase = function (s, classe, tag) {
 				callback(buildException(xhr, ex));
 			}
 		},
+		put: function (url, bodyObject, callback, name0, value0) {
+			if (!url)
+				throw JsonWebApi.messages.invalidURL;
+
+			if (bodyObject === undefined)
+				throw JsonWebApi.messages.invalidBodyObject;
+
+			if (!callback)
+				throw JsonWebApi.messages.invalidCallback;
+
+			if (!(arguments.length & 1))
+				throw JsonWebApi.messages.invalidArgumentCount;
+
+			return sendRequest(true, "put", (arguments.length > 3) ? buildFullUrl(url, arguments, 3) : url, callback, bodyObject);
+		},
 		execAsync: function (method, args, callbackIndex) {
 			return new Promise(function (resolve, reject) {
 				try {
@@ -1473,7 +1510,7 @@ window.BlobDownloader = {
 };
 // Search for selects
 (function () {
-	var regSlash = /[\/\\]/g, regTrim = /^\s+|\s+$/g, regA = /[ÁÀÃÂÄ]/g, regE = /[ÉÈÊË]/g, regI = /[ÍÌÎÏ]/g, regO = /[ÓÒÕÔÖ]/g, regU = /[ÚÙÛÜ]/g, regY = /[ÝŸ]/g, regC = /[Ç]/g;
+	var regSlash = /[\/\\]/g, regTrim = /^\s+|\s+$/g, regDiacritics = /[\u0300-\u036f]/g; //, regA = /[ÁÀÃÂÄ]/g, regE = /[ÉÈÊË]/g, regI = /[ÍÌÎÏ]/g, regO = /[ÓÒÕÔÖ]/g, regU = /[ÚÙÛÜ]/g, regY = /[ÝŸ]/g, regC = /[Ç]/g;
 
 	function cbSearch_SetValue(select, value) {
 		select.value = value;
@@ -1494,11 +1531,13 @@ window.BlobDownloader = {
 	}
 
 	function cbSearch_Normalize(x) {
-		return x.toUpperCase().replace(regSlash, " ").replace(regTrim, "").replace(regA, "A").replace(regE, "E").replace(regI, "I").replace(regO, "O").replace(regU, "U").replace(regY, "Y").replace(regC, "C");
+		//return x.toUpperCase().replace(regSlash, " ").replace(regTrim, "").replace(regA, "A").replace(regE, "E").replace(regI, "I").replace(regO, "O").replace(regU, "U").replace(regY, "Y").replace(regC, "C");
+		return (x ? x.normalize("NFD").replace(regDiacritics, "").replace(regSlash, " ").replace(regTrim, "").toUpperCase() : "");
 	}
 
 	window.normalizeAccent = function (x) {
-		return (x ? x.toUpperCase().replace(regTrim, "").replace(regA, "A").replace(regE, "E").replace(regI, "I").replace(regO, "O").replace(regU, "U").replace(regY, "Y").replace(regC, "C") : "");
+		//return (x ? x.toUpperCase().replace(regTrim, "").replace(regA, "A").replace(regE, "E").replace(regI, "I").replace(regO, "O").replace(regU, "U").replace(regY, "Y").replace(regC, "C") : "");
+		return (x ? x.normalize("NFD").replace(regDiacritics, "").replace(regTrim, "").toUpperCase() : "");
 	};
 
 	function cbSearch_Change() {
@@ -1966,6 +2005,8 @@ window.BlobDownloader = {
 		input.onblur = cbSearch_Blur;
 		input.onkeydown = cbSearch_KeyDown;
 		input.onkeyup = cbSearch_KeyUp;
+		if (select.disabled)
+			input.readOnly = true;
 		data.menu.className = "dropdown-menu";
 		data.menu.style.maxHeight = "140px";// 10 (padding) + (26 x item count)
 		data.menu.style.overflowY = "auto";

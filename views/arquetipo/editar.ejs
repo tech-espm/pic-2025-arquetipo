@@ -39,7 +39,7 @@
 			<label for="imagem">Imagem (Opcional)</label>
 			<input id="imagem" name="imagem" class="form-control" type="file" accept=".png, .jpg, .jpeg" />
 		</div>
-		<div class="form-group">
+		<div class="form-group <%- ((item && item.versao > 0) ? '' : 'd-none') %>">
 			<div class="form-check">
 				<input class="form-check-input" type="checkbox" value="1" name="excluir_imagem_atual" id="chkExcluirImagemAtual" />
 				<label class="form-check-label" for="chkExcluirImagemAtual">
@@ -48,7 +48,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="col-md-6 <%- ((item && item.versao > 0) ? 'd-none' : "") %>" id="divImagem">
+	<div class="col-md-6 <%- ((item && item.versao > 0) ? '' : 'd-none') %>" id="divImagem">
 		<div class="form-group">
 			<label for="imgImagem">Imagem Atual</label>
 			<img id="imgImagem" src="<%- staticRoot %>/img/arquetipo/<%- (item && item.id) %>.jpg?v=<%- (item && item.versao) %>" style="display: block; width: 100%; max-width: 300px;" />
@@ -133,7 +133,7 @@
 
 						chkExcluirImagemAtual.checked = false;
 
-						Swal.success("Arquetipo alterado com sucesso! " + emoji.happy);
+						Swal.success("Arquétipo alterado com sucesso! " + emoji.happy);
 					} else {
 						Swal.error(response.value + " " + emoji.sad);
 					}
@@ -145,9 +145,7 @@
 					if (response.success) {
 						CKEDITOR.instances.descricaocompleta.setData("");
 						resetForm("#form");
-						Swal.success("Arquetipo criado com sucesso! " + emoji.happy).then(() => {
-							JsonWebApi.redirect("<%- root %>/arquetipo/editar?id=" + response.value);
-						});
+						Swal.success("Arquétipo criado com sucesso! " + emoji.happy);
 					} else {
 						Swal.error(response.value + " " + emoji.sad);
 					}
