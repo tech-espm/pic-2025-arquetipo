@@ -20,11 +20,12 @@
 
     <div class="col-md-4">
         <div class="form-group">
-            <input type="hidden" id="iddepartamento" name="iddepartamento" />
-            <label for="iddepartamentoselect">Departamento</label>
-            <select id="iddepartamentoselect" class="form-control" size="1">
+            <label for="iddepartamento">Departamento</label>
+            <select id="iddepartamento" name="iddepartamento" class="form-control" size="1">
+                <option value="">Selecione...</option>
                 <% for (let i=0; i < departamentos.length; i++) { %>
-                    <option value="<%= departamentos[i].id %>">
+                    <option value="<%= departamentos[i].id %>"
+                        <%-((item && item.iddepartamento==departamentos[i].id) ? 'selected="selected"' : '' ) %>>
                         <%= departamentos[i].nome %>
                     </option>
                     <% } %>
@@ -40,9 +41,9 @@
             <select id="iddisponibilidade" name="iddisponibilidade" class="form-control" size="1">
                 <option value="">Selecione...</option>
                 <% for (let i=0; i < disponibilidades.length; i++) { %>
-                    <option value="<%= disponibilidades[i].id %>" <%-((item &&
-                        item.iddisponibilidade===disponibilidades[i].id) ? 'selected="selected"' : '' ) %>><%=
-                            disponibilidades[i].nome %>
+                    <option value="<%= disponibilidades[i].id %>" 
+                    <%-((item && item.iddisponibilidade===disponibilidades[i].id) ? 'selected="selected"' : '' ) %>>
+                    <%= disponibilidades[i].nome %>
                     </option>
                     <% } %>
             </select>
@@ -79,8 +80,13 @@
     <div class="col-md-12">
         <div class="form-group">
             <label for="url">URL</label>
-            <input id="url" name="url" maxlength="100" class="form-control" type="text" spellcheck="false"
-                value="<%=(item ? item.url : '') %>" />
+            <div class="input-group mb-3">
+                  <div class="input-group-prepend">
+                        <span class="input-group-text" id="urlbase"></span>
+                    </div>
+                <input id="url" name="url" maxlength="100" class="form-control" type="text" spellcheck="false" 
+                value="<%=(item ? item.url : '') %>" aria-describedby="urlbase"/>
+            </div>
         </div>
     </div>
 </div>
@@ -268,7 +274,14 @@
             <h4>Questões</h4>
         </div>
     </div>
-<table class="table table-flush table-striped table-hover" id="tabela"></table>
+    <div class="row">
+
+        <div class="col-12">
+            
+            <table class="table table-flush table-striped table-hover" id="tabela"></table>
+        </div>
+        
+    </div>
 
     <% } %>
 
@@ -292,22 +305,21 @@
         //<![CDATA[
         "use strict";
 
+        document.getElementById("urlbase").innerText = location.protocol + '//' + location.hostname + "/s/";
+
         
         CKEDITOR.replace("textointroducao");
         
-        prepareMultiselect("#iddepartamentoselect", { title: "Departamento", label: "Departamento" });
         prepareMultiselect("#idpublicoalvoselect", { title: "Público-alvo", label: "Público-alvo" });
 
-        
+
         //<% if (item) { %>
         
-        setMultiselectSelection("#iddepartamentoselect", [<%- item.iddepartamento.map(d => d.iddepartamento).join(",") %>]);
         setMultiselectSelection("#idpublicoalvoselect", [<%- item.idpublicosalvos.map(d => d.idpublicoalvo).join(",") %>]);
         
         prepareMultiselect("#iddarquetiposselect", { title: "Arquétipo", label: "Arquétipo" });
         setMultiselectSelection("#iddarquetiposselect", [<%- item.idarquetipos.map(d => d.idarquetipo).join(",") %>]);
         
-
 
         const arquetipos = [<%- arquetipos.map(d => JSON.stringify({id:d.id, nome:d.nome})).join(",") %>];
         const departamentos = [<%- departamentos.map(d => JSON.stringify([d.id])).join(",") %>];
@@ -316,7 +328,6 @@
         document.getElementById("btnAdicionarQuestao").addEventListener("click", function () {
             criarModal();
         });
-
         
         let arquetiposSelecionados;
         let arquetiposFiltrados;
@@ -381,7 +392,6 @@
             $("#meuModal").modal("show");
         }
 
-
         function adicionarAlternativa(texto, arquetipoid) {
             const lista = document.getElementById('listaAlternativas');
             const alternativa = document.createElement('div');
@@ -440,7 +450,7 @@
             }
             const questoesElement = document.getElementById("questoes");
             let questoes = [];
-            if (questoesElement.value) {
+            if (questoesElement.value && questoesElement.value !== "null") {
                 questoes = JSON.parse(questoesElement.value);
             }
             if (questaoId){
@@ -477,8 +487,7 @@
             $('#tabela').DataTable().clear().rows.add(questoes).draw();
         }
 
-
-    function removerQuestao(questaoId) {
+        function removerQuestao(questaoId) {
         Swal.okcancel("Tem certeza que deseja excluir esta questão?").then((result) => {
             if (result.isConfirmed) {
                 const questoesElement = document.getElementById("questoes");
@@ -494,32 +503,22 @@
         });
     }
 
-    $('#tabela').DataTable({
-        data: <%- JSON.stringify(item.questoes) %>,
-        columns: [
-        {
-            data: "",
-            render: function (data, type, row) {
-                return `
-                    <button class="btn btn-primary btn-sm" type="button" onclick="criarModal(${row.id})">Editar <i class="fa fa-fw fa-edit"></i></button>
-                    <button class="btn btn-danger btn-sm" type="button" onclick="removerQuestao(${row.id})">Excluir <i class="fa fa-fw fa-times"></i></button>
-                `;
-            }
-        },
-        {
-            data: 'titulo',
-            render: function (data, type, row) {
-                return (data == null ? '' : data);
-            }
-        },
-        {
-            data: 'enunciado',
-            render: function (data, type, row) {
-                return (data == null ? '' : data);
-            }
-        }
-    ]
-});
+        $('#tabela').DataTable({
+            data: <%- JSON.stringify(item.questoes) %>,
+            columns:[
+                        {
+                            data: "",
+                            render: function (data, type, row) {
+                                return `
+                                    <button class="btn btn-primary btn-sm" type="button" onclick="criarModal(${row.id})">Editar <i class="fa fa-fw fa-edit"></i></button>
+                                    <button class="btn btn-danger btn-sm" type="button" onclick="removerQuestao(${row.id})">Excluir <i class="fa fa-fw fa-times"></i></button>
+                                `;
+                            }
+                        },
+                        { title: 'Título', data: 'titulo' },
+                        { title: 'Enunciado', data: 'enunciado' }
+                    ],
+    });
 
         //<% } %>
 
@@ -534,6 +533,9 @@
                 iddisponibilidade: {
                     required: true,
                 },
+                iddepartamento: {
+                    required: true,
+                },
                 anonimo: {
                     required: true,
                 },
@@ -545,9 +547,6 @@
                     // url: true
                 },
                 descricao: {
-                    required: true,
-                },
-                iddepartamento: {
                     required: true,
                 },
                 corfundopagina: {
@@ -566,13 +565,13 @@
                     required: true,
                 },
                 imagemintroducao: {
-                    tamanhoArquivoMaximoKiB: 1024,
+                    tamanhoArquivoMaximoKiB: 16000,
                 },
                 imagemquestionario: {
-                    tamanhoArquivoMaximoKiB: 1024,
+                    tamanhoArquivoMaximoKiB: 16000,
                 },
                 imagemlogo: {
-                    tamanhoArquivoMaximoKiB: 1024,
+                    tamanhoArquivoMaximoKiB: 2048,
                 },
                 idarquetipos: {
                     required: true
@@ -585,7 +584,6 @@
 
                 Swal.wait();
 
-                $("#iddepartamento").val(getMultiselectSelection("#iddepartamentoselect").join(","));
                 $("#idpublicosalvos").val(getMultiselectSelection("#idpublicoalvoselect").join(","));
                 $("#hiddentextointroducao").val(CKEDITOR.instances.textointroducao.getData());
 
@@ -656,5 +654,6 @@
                 //<% } %>
             }
         });
+        
         //]]>
     </script>

@@ -1,7 +1,8 @@
 import app = require("teem");
 import Usuario = require("../../models/usuario");
 import Questionario = require("../../models/questionario");
-import { Console } from "console";
+import { parse } from "path";
+import Arquetipo = require("../../models/arquetipo");
 
 class QuestionarioApiRoute {
 	@app.http.get()
@@ -35,7 +36,7 @@ class QuestionarioApiRoute {
 		if (!u)
 			return;
 
-		//Perguntar: todo usuário vai estar em um departamento ou todo questionario pertence a um departamento? senão, terei que fazer alterações nas queries para suportar questionarios sem departamento, ou seja, só são visiveis para aquele usuario e o admin
+		// Perguntar: todo usuário vai estar em um departamento ou todo questionario pertence a um departamento? senão, terei que fazer alterações nas queries para suportar questionarios sem departamento, ou seja, só são visiveis para aquele usuario e o admin
 		// Resposta: o questionario não está ligado com nenhum usuario ele está ligado somente com os departamentos
 
 		const r = await Questionario.criar(
@@ -111,6 +112,7 @@ public static async editar(req: app.Request, res: app.Response) {
 
 		res.sendStatus(204);
 	}
+
 }
 
 export = QuestionarioApiRoute;

@@ -6,16 +6,20 @@ import GeradorHash = require("../utils/geradorHash");
 import intToHex = require("../utils/intToHex");
 import Perfil = require("../enums/perfil");
 import Validacao = require("../utils/validacao");
+import Publico = require("../enums/publico");
+
 
 interface Usuario {
 	id: number;
 	email: string;
 	nome: string;
 	idperfil: Perfil;
+	idpublico: Publico;
 	criacao: string;
 	iddepartamento: any[] | string | null;
 
 	// Utilizados apenas através do cookie
+	funcionario: boolean;
 	admin: boolean;
 	diretor: boolean;
 }
@@ -23,7 +27,7 @@ interface Usuario {
 class Usuario {
 	private static readonly IdAdmin = 1;
 
-	public static async cookie(req: app.Request, res: app.Response = null, apenasAdmin: boolean = false, adminOuDiretor: boolean = false): Promise<Usuario> {
+	public static async cookie(req: app.Request, res: app.Response = null, apenasAdmin: boolean = false, adminOuDiretor: boolean = false, aluno: boolean = false): Promise<Usuario> {
 		let cookieStr = req.cookies[appsettings.cookie] as string;
 		if (!cookieStr || cookieStr.length !== 48) {
 			if (res) {
@@ -36,7 +40,7 @@ class Usuario {
 			let usuario: Usuario = null;
 
 			await app.sql.connect(async (sql) => {
-				let rows = await sql.query("select id, email, nome, idperfil, token from usuario where id = ?", [id]);
+				let rows = await sql.query("select id, email, nome, idperfil, idpublico, token from usuario where id = ?", [id]);
 				let row: any;
 
 				if (!rows || !rows.length || !(row = rows[0]))
@@ -52,6 +56,8 @@ class Usuario {
 				usuario.email = row.email as string;
 				usuario.nome = row.nome as string;
 				usuario.idperfil = row.idperfil as number;
+				usuario.idpublico = row.idpublico as number;
+				usuario.funcionario = (usuario.idpublico === Publico.Funcionario);
 				usuario.admin = (usuario.idperfil === Perfil.Administrador);
 				usuario.diretor = (usuario.idperfil === Perfil.Diretor);
 			});
@@ -60,6 +66,10 @@ class Usuario {
 				usuario = null;
 			else if (adminOuDiretor && usuario && usuario.idperfil !== Perfil.Administrador && usuario.idperfil !== Perfil.Diretor)
 				usuario = null;
+			else if (usuario && usuario.idpublico !== Publico.Funcionario && !aluno) {
+				usuario = null;
+			}
+
 			if (!usuario && res) {
 				res.statusCode = 403;
 				res.json("Não permitido");
@@ -85,12 +95,24 @@ class Usuario {
 		if (json.erro)
 			return [json.erro, null];
 
-		return await app.sql.connect(async (sql) => {
-			const usuarios: Usuario[] = await sql.query("select id, email, nome, idperfil from usuario where email = ? and exclusao is null", [json.dados.email]);
-			let usuario: Usuario;
 
-			if (!usuarios || !usuarios.length || !(usuario = usuarios[0]))
-				return ["Usuário não está cadastrado. Por favor, entre em contato com o administrador do sistema.", null];
+		return await app.sql.connect(async (sql) => {
+			
+			const usuarios: Usuario[] = await sql.query("select id, email, nome, idperfil, idpublico from usuario where email = ? and exclusao is null", [json.dados.email]);
+			let usuario:Usuario;
+
+			if (!usuarios.length){
+				const u = {
+				email: json.dados.email as string,
+				nome: json.dados.nome as string,
+				idperfil: Perfil.Comum,
+				idpublico: (json.dados.emailAcademico.match("@acad.espm.br") ? Publico.Aluno : Publico.Funcionario)
+			};
+			await Usuario.criar(u as Usuario);
+			usuario = await Usuario.obterPorEmail(u.email);
+			}else{
+			usuario = usuarios[0];
+			}
 
 			let [token, cookieStr] = Usuario.gerarTokenCookie(usuario.id);
 
@@ -163,25 +185,38 @@ class Usuario {
 
 	public static listar(): Promise<Usuario[]> {
 		return app.sql.connect(async (sql) => {
-			return (await sql.query("select u.id, u.email, u.nome, p.nome perfil, date_format(u.criacao, '%d/%m/%Y') criacao from usuario u inner join perfil p on p.id = u.idperfil where u.exclusao is null")) || [];
+			return (await sql.query(`select u.id, u.email, u.nome, p.nome perfil, date_format(u.criacao, '%d/%m/%Y') criacao from usuario u inner join perfil p on p.id = u.idperfil where (u.exclusao is null) and (u.idpublico = ?)`, [Publico.Funcionario])) || [];
 		});
 	}
 
 	public static listarCombo(): Promise<Usuario[]> {
 		return app.sql.connect(async (sql) => {
-			return (await sql.query("select id, nome from usuario where exclusao is null order by nome asc")) || [];
+			return (await sql.query("select id, nome from usuario  where (u.exclusao is null) and (u.idpublico = ?) order by nome asc", [Publico.Funcionario])) || [];
 		});
 	}
 
 	public static obter(id: number): Promise<Usuario> {
 		return app.sql.connect(async (sql) => {
-			const lista: Usuario[] = await sql.query("select id, email, nome, idperfil, date_format(criacao, '%d/%m/%Y') criacao from usuario where id = ?", [id]);
+			const lista: Usuario[] = await sql.query("select id, email, nome, idperfil, date_format(criacao, '%d/%m/%Y') criacao from usuario where id = ? and (u.idpublico = ?)", [id, Publico.Funcionario]);
 
 			if (!lista || !lista[0])
 				return null;
 
 			const usuario = lista[0];
 			usuario.iddepartamento = await sql.query("select iddepartamento from usuario_departamento where idusuario = ?", [id]);
+
+			return usuario;
+		});
+	}
+
+	public static obterPorEmail(email: string): Promise<Usuario> {
+		return app.sql.connect(async (sql) => {
+			const lista: Usuario[] = await sql.query("select id, email, nome, idperfil, idpublico, date_format(criacao, '%d/%m/%Y') criacao from usuario where id = ?", [email]);
+
+			if (!lista || !lista[0])
+				return null;
+
+			const usuario = lista[0];
 
 			return usuario;
 		});
@@ -213,15 +248,16 @@ class Usuario {
 	};
 
 	public static async criar(usuario: Usuario): Promise<string> {
-		const res = Usuario.validar(usuario, true);
-		if (res)
-			return res;
+		const erro = Usuario.validar(usuario, true);
+		if (erro)
+			return erro;
 
 		return app.sql.connect(async (sql) => {
-			await sql.beginTransaction();
-
+			
 			try {
-				await sql.query("insert into usuario (email, nome, idperfil, criacao) values (?, ?, ?, now())", [usuario.email, usuario.nome, usuario.idperfil]);
+				await sql.beginTransaction();
+				
+				await sql.query("insert into usuario (email, nome, idperfil, idpublico, criacao) values (?, ?, ?, ?,now())", [usuario.email, usuario.nome, usuario.idperfil, usuario.idpublico]);
 
 				usuario.id = (await sql.scalar("select last_insert_id()")) as number;
 
@@ -264,11 +300,11 @@ class Usuario {
 
 				if (!sql.affectedRows)
 					return "Usuário não encontrado";
-	
+
 				await Usuario.merge(sql, usuario.id, usuario.iddepartamento as number[]);
-	
+
 				await sql.commit();
-	
+
 				return null;
 			} catch (e) {
 				if (e.code) {

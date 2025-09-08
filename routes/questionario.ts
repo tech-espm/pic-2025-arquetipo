@@ -6,6 +6,10 @@ import Arquetipo = require("../models/arquetipo");
 import disponibilidades = require("../models/disponibilidade");
 import publicos = require("../models/publico");
 import Questionario = require("../models/questionario");
+import Disponibilidade = require("../enums/disponibilidade");
+import Publico = require("../enums/publico");
+import Submissao = require("../models/submissao");
+import { count } from "console";
 
 // Perguntar: adicionar o diretor ao departamento quando o proprio diretor criar o departamento? porque dessa forma eu sei de onde ele veio
 
@@ -70,23 +74,10 @@ class QuestionarioRoute {
 			departamentos.forEach((e) => iddepartamento.push(e.id))
 		} else {
 			let usuario = await Usuario.obter(u.id);
-
-			//caso o usuario esteja acessando um questionario que tem departamentos aos quais ele não tem acesse
-			let setiddepartamento = new Set<number>();
-
-			for (const x of item.iddepartamento as number[])
-				setiddepartamento.add(x);
-
-			for (const x of usuario.iddepartamento as number[])
-				setiddepartamento.add(x);
-
-			iddepartamento = Array.from(setiddepartamento);
 			departamentos = await Departamento.obter(iddepartamento);
 		}
 
-
-
-		let arquetipos = await Arquetipo.listarPorDepartamentos(item.iddepartamento as number[]);
+		let arquetipos = await Arquetipo.listarPorDepartamento(item.iddepartamento);
 
 		res.render("questionario/editar", {
 			titulo: "Editar Questionário",
@@ -115,6 +106,8 @@ class QuestionarioRoute {
 				lista: await Questionario.listar()
 			});
 	}
+
+
 }
 
 export = QuestionarioRoute;

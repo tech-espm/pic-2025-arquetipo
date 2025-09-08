@@ -1,0 +1,249 @@
+<style>
+  .tela {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  .tela.ativa {
+    display: block;
+    opacity: 1;
+  }
+
+  .alternativa.selecionada {
+    background-color: #0d6efd;
+    color: white;
+  }
+
+  .invalid-feedback {
+    display: block;
+    margin-top: -0.5rem;
+  }
+
+  .form-floating {
+    position: relative;
+  }
+
+  .form-floating .invalid-feedback {
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+  }
+
+  .form-floating>.form-control,
+  .form-floating>.form-select {
+    height: calc(3.5rem + 2px);
+    line-height: 1.25;
+    padding: 1rem 0.75rem;
+  }
+
+  .form-floating>.form-control::placeholder {
+    color: transparent;
+  }
+
+  .form-floating>label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    padding: 1rem 0.75rem;
+    pointer-events: none;
+    border: 1px solid transparent;
+    transform-origin: 0 0;
+    transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+  }
+
+  .form-floating>.form-control:focus,
+  .form-floating>.form-control:not(:placeholder-shown),
+  .form-floating>.form-select {
+    padding-top: 1.625rem;
+    padding-bottom: 0.625rem;
+  }
+
+  .form-floating>.form-control:focus~label,
+  .form-floating>.form-control:not(:placeholder-shown)~label,
+  .form-floating>.form-select~label {
+    opacity: 0.65;
+    transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+  }
+</style>
+
+<div id="questionario" class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="tela ativa" id="introducao">
+        <%- item.textointroducao %>
+        <button class="btn btn-primary" onclick="questionario.avancar()">COMEÇAR</button>
+      </div>
+      <% if (paraTodos) { %>
+      <div class="tela" id="cadastro">
+        <form id="formcadastro">
+          <input type="hidden" id="idquestionario" name="idquestionario" value="<%- item.id %>">
+          <div class="form-floating mb-3">
+            <input type="text" id="nome" name="nome" class="form-control" placeholder="Nome" required autofocus>
+            <label for="nome">Nome</label>
+          </div>
+          <div class="form-floating mb-3">
+            <input type="email" id="email" name="email" class="form-control" placeholder="Email" required>
+            <label for="email">Email</label>
+          </div>
+          <div class="form-floating mb-3">
+            <input type="tel" id="telefone" name="telefone" class="form-control" placeholder="Telefone" required>
+            <label for="telefone">Telefone</label>
+          </div>
+          <button type="submit" class="btn btn-primary">Avançar</button>
+        </form>
+      </div>
+      <% } %>
+
+      <% item.questoes.forEach((questao) => { %>
+      <div class="tela questao" id="<%- questao.id %>" data-questao="<%- questao.id %>" data-obrigatoria="true">
+        <div class="titulo"><%- questao.titulo %></div>
+        <div class="enunciado"><%- questao.enunciado %></div>
+
+          <% questao.alternativas.forEach((alt) => { %>
+          <div class="form-check">
+            <input class="form-check-input q-<%- questao.id %>" type="radio" name="questao-<%- questao.id %>" id="<%- questao.id + "-" + alt.arquetipoid %>" value="<%- alt.arquetipoid %>" onchange="questionario.registrarResposta(<%- questao.id %>, '<%- alt.arquetipoid %>')"  <%- (resposta && resposta[questao.id] == alt.arquetipoid) ? "checked" : "" %>>
+            <label class="form-check-label" for="<%- questao.id + "-" + alt.arquetipoid %> ">
+              <%- alt.texto %>
+            </label>
+          </div>
+          <% }) %>
+
+        <div class="mt-3">
+          <button type="button" class="btn btn-secondary" onclick="questionario.voltar()">Voltar</button>
+          <button type="button" class="btn btn-primary" onclick="questionario.avancar()">Avançar</button>
+        </div>
+
+      </div>
+
+      <% }) %>
+
+      <div class="tela" id="conclusao">
+        <div class="container">
+          <div class="row">
+            <div class="col-8" id="arquetipo"></div>
+            <div class="col-4"><img id="imgconclusao" src="" alt=""></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- contentFor("scripts") %>
+<script>
+  //<![CDATA[
+  "use strict";
+
+  class Questionario {
+    constructor(selector) {
+      this.telas = document.querySelectorAll(selector);
+      this.telaAtual = 0;
+      //<% if (resposta) { %>
+        this.respostas = <%- JSON.stringify(resposta) %>;
+      //<% } else{ %>
+        this.respostas = {};
+        this.configurarValidacao();
+      //<% } %>
+      this.mostrarTela(0);
+
+    }
+
+    mostrarTela(index) {
+      this.telas.forEach((t, i) => t.classList.toggle("ativa", i === index));
+      this.telaAtual = index;
+    }
+
+    avancar() {
+      if (!this.validarTela()) return;
+      if (this.telaAtual + 1 < this.telas.length) {
+        this.mostrarTela(this.telaAtual + 1);
+        if (this.telas[this.telaAtual].id === "conclusao") this.gerarConclusao();
+      }
+    }
+
+    voltar() {
+      if (this.telaAtual > 0) this.mostrarTela(this.telaAtual - 1);
+    }
+
+    registrarResposta(questaoId, alternativaId) {
+      this.respostas[questaoId] = alternativaId;
+      $(`#${questaoId}-${alternativaId}`).prop("checked", true);
+    }
+
+    validarTela() {
+      const tela = this.telas[this.telaAtual];
+      const questaoId = tela.dataset.questao;
+      if (tela.classList.contains("questao") && !this.respostas[questaoId]) {
+        Swal.fire("Atenção", "Selecione uma alternativa antes de avançar.", "warning");
+        return false;
+      }
+      return true;
+    }
+
+    //mudar validação se o usuario for interno
+    configurarValidacao() {
+      //<% if (paraTodos) { %>
+        $("#formcadastro").validate({
+          errorElement: "div",
+          errorClass: "invalid-feedback",
+          highlight: el => $(el).addClass("is-invalid").removeClass("is-valid"),
+          unhighlight: el => $(el).removeClass("is-invalid").addClass("is-valid"),
+          errorPlacement: (error, el) => error.insertAfter(el),
+          submitHandler: (form) => {
+            if (JsonWebApi.active) return;
+            JsonWebApi.postFormData("<%- root %>/api/submissao/obter", new FormData(form), (response) => {
+              if (response.success) {
+                if (!response.value.mensagem) this.preencherForm(response.value);
+                this.avancar();
+              } else {
+                Swal.error(response.value + " " + emoji.sad);
+              }
+            });
+          }
+        });
+    //<% }%>
+    }
+
+    preencherForm(res) {
+      if (!res) return;
+      for (const questaoid in res) this.registrarResposta(questaoid, res[questaoid]);
+    }
+
+    gerarConclusao() {
+      if (JsonWebApi.active) return;
+
+
+      let req = {
+        resposta: this.respostas,
+        idquestionario: <%- item.id %>,
+        <%- usuario ? "idusuario:"+usuario.id+"," : `` %>
+        email: $("#email").val(),
+        nome: $("#nome").val(),
+        telefone: $("#telefone").val()
+      };
+
+      const counts = {};
+      for (const key in this.respostas) {
+        const id = this.respostas[key];
+        counts[id] = (counts[id] || 0) + 1;
+      }
+      req.resposta.arquetipoid = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+
+      JsonWebApi.post("<%- root %>/api/submissao/criarOuEditar", req, (response) => {
+        if (response.success) {
+          const arquetipo = response.value;
+          $("#imgconclusao").attr("src", `<%- staticRoot %>/img/arquetipo/${arquetipo.id}.jpg?v=${arquetipo.versao}`);
+          $("#arquetipo").html(`<h1>${arquetipo.nome}</h1><div>${arquetipo.descricaocompleta}</div>`);
+        } else {
+          Swal.error(response.value + " " + emoji.sad);
+        }
+      });
+    }
+
+  }
+
+  
+  //]]>
+  const questionario = new Questionario(".tela");
+</script>

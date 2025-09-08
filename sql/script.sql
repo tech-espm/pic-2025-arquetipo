@@ -40,6 +40,7 @@ CREATE TABLE usuario (
   email varchar(100) NOT NULL,
   nome varchar(100) NOT NULL,
   idperfil int NOT NULL,
+  idpublico int NOT NULL,
   token char(32) DEFAULT NULL,
   exclusao datetime NULL,
   criacao datetime NOT NULL,
@@ -47,10 +48,12 @@ CREATE TABLE usuario (
   UNIQUE KEY usuario_email_UN (email),
   KEY usuario_exclusao_IX (exclusao),
   KEY usuario_idperfil_FK_IX (idperfil),
-  CONSTRAINT usuario_idperfil_FK FOREIGN KEY (idperfil) REFERENCES perfil (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+  KEY usuario_idpublico_FK_IX (idpublico),
+  CONSTRAINT usuario_idperfil_FK FOREIGN KEY (idperfil) REFERENCES perfil(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT usuario_idpublico_FK FOREIGN KEY (idpublico) REFERENCES publico(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
 
-INSERT INTO usuario (email, nome, idperfil, token, criacao) VALUES ('admin@espm.br', 'Administrador', 1, NULL, NOW());
+INSERT INTO usuario (email, nome, idperfil, idpublico, token, criacao) VALUES ('admin@espm.br', 'Administrador', 1, 2, NULL, NOW());
 
 
 -- DROP TABLE IF EXISTS departamento;
@@ -100,7 +103,7 @@ CREATE TABLE arquetipo_departamento (
   CONSTRAINT arquetipo_iddepartamento_FK FOREIGN KEY (iddepartamento) REFERENCES departamento (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
 
-DROP TABLE IF EXISTS questionario_departamento, questionario_publicoalvo, questionario_arquetipo, questionario;
+-- DROP TABLE IF EXISTS questionario_departamento, questionario_publicoalvo, questionario_arquetipo, questionario, submissao;
 
 -- DROP TABLE IF EXISTS questionario;
 CREATE TABLE questionario (
@@ -128,7 +131,7 @@ CREATE TABLE questionario (
   UNIQUE KEY questionario_nomeexterno_UN (nomeexterno),
   UNIQUE KEY questionario_url_UN (url),
   CONSTRAINT questionario_iddisponibilidade_fk FOREIGN KEY (iddisponibilidade) REFERENCES disponibilidade(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT questionario_iddepartamento_fk FOREIGN KEY (id) REFERENCES departamento(id) ON DELETE RESTRICT ON UPDATE RESTRICT
+  CONSTRAINT questionario_iddepartamento_fk FOREIGN KEY (iddepartamento) REFERENCES departamento(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
 
 -- DROP TABLE IF EXISTS questionario_departamento;
@@ -163,3 +166,20 @@ CREATE TABLE questionario_arquetipo (
   CONSTRAINT fk_qa_questionario FOREIGN KEY (idquestionario) REFERENCES questionario(id) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT fk_qa_arquetipo FOREIGN KEY (idarquetipo) REFERENCES arquetipo(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
+
+-- DROP TABLE IF EXISTS submissao;
+CREATE TABLE submissao (
+  id INT NOT NULL AUTO_INCREMENT,
+  idquestionario INT NOT NULL,
+  idusuario INT,
+  nome VARCHAR(255),
+  telefone VARCHAR(15),
+  email VARCHAR(255),
+  resposta JSON NOT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT fk_qs_questionario_FK FOREIGN KEY (idquestionario) REFERENCES questionario(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_qs_idusuario_FK FOREIGN KEY (idusuario) REFERENCES usuario(id) ON DELETE RESTRICT ON UPDATE RESTRICT
+);
+
+
+

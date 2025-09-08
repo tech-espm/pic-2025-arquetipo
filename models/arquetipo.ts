@@ -69,7 +69,7 @@ class Arquetipo {
 		return app.sql.connect(async (sql) => {
 			if (id instanceof Array) {
 				if (id.length === 0) return [];
-				const lista: Arquetipo[] = await sql.query(`select id, nome, nomeexterno, descricaocurta, descricaocompleta from arquetipo where id in (?)`, [id]);
+				const lista: Arquetipo[] = await sql.query(`select id, nome, nomeexterno, versao,descricaocurta, descricaocompleta from arquetipo where id in (?)`, [id]);
 
 				for (let x = 0; x < lista.length;x++){
 					lista[x].iddepartamento = await sql.query("select iddepartamento from arquetipo_departamento where idarquetipo = ?", [id]);
@@ -109,6 +109,8 @@ class Arquetipo {
 		});
 	}
 
+	
+
 	private static async merge(sql: app.Sql, id: number, departamentos: number[] | null) {
 		if (!departamentos)
 			departamentos = [];
@@ -139,8 +141,8 @@ class Arquetipo {
 		if (res)
 			return res;
 
-		if (imagem && imagem.size > 1024 * 1024)
-			return "O tamanho da imagem não pode ser maior que 1MB";
+		if (imagem && imagem.size > 4 * 1024 * 1024)
+			return "O tamanho da imagem não pode ser maior que 4MB";
 
 		return app.sql.connect(async (sql) => {
 			await sql.beginTransaction();
@@ -181,8 +183,8 @@ class Arquetipo {
 		if (imagem) {
 			arquetipo.excluir_imagem_atual = 0;
 
-			if (imagem.size > 1024 * 1024)
-				return "O tamanho da imagem não pode ser maior que 1MB";
+			if (imagem.size > 4 * 1024 * 1024)
+				return "O tamanho da imagem não pode ser maior que 4MB";
 		} else if (parseInt(arquetipo.excluir_imagem_atual as any)) {
 			arquetipo.excluir_imagem_atual = 1;
 		}

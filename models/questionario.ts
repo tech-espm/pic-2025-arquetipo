@@ -16,7 +16,7 @@ interface Questionario {
 	cortextodestaque: string;
 	criacao: string | null;
 	textointroducao: string | null;
-	questoes: any;
+	questoes: string;
 	excluir_imagem_introducao?: number | null;
 	excluir_imagem_questionario?: number | null;
 	excluir_imagem_logo?: number | null;
@@ -46,8 +46,8 @@ class Questionario {
 		if (!questionario.nomeexterno || !(questionario.nomeexterno = questionario.nomeexterno.normalize().trim()) || questionario.nomeexterno.length > 100)
 			return "Nome externo inválido";
 
-		if (!questionario.url || !(questionario.url = questionario.url.normalize().trim()) || questionario.url.length > 100)
-			return "URL inválida";
+		if (!questionario.url || !(questionario.url = questionario.url.normalize().trim()) || questionario.url.length > 100 || URL.canParse(questionario.url))
+			return "URL inválida.";
 
 		if (!questionario.descricao || !(questionario.descricao = questionario.descricao.normalize().trim()) || questionario.descricao.length > 1000)
 			return "Descrição inválida";
@@ -74,7 +74,7 @@ class Questionario {
 			return "Disponibilidade inválida";
 
 		if (!questionario.iddepartamento || isNaN(parseInt(questionario.iddepartamento as any)))
-			return "Disponibilidade inválida";
+			return "Departamento inválido";
 
 		// Validação dos relacionamentos - obg gpt
 		const relacionamentos = {
@@ -201,15 +201,15 @@ class Questionario {
 		if (res)
 			return res;
 
-		if (imagemintroducao && imagemintroducao.size > 1024 * 1024)
-			return "O tamanho da imagem não pode ser maior que 1MB";
+		if (imagemintroducao && imagemintroducao.size > 16 * 1024 * 1024)
+			return "O tamanho da imagem não pode ser maior que 16MB";
 
 
-		if (imagemquestionario && imagemquestionario.size > 1024 * 1024)
-			return "O tamanho da imagem não pode ser maior que 1MB";
+		if (imagemquestionario && imagemquestionario.size > 16 * 1024 * 1024)
+			return "O tamanho da imagem não pode ser maior que 16MB";
 
-		if (imagemlogo && imagemlogo.size > 1024 * 1024)
-			return "O tamanho da imagem não pode ser maior que 1MB";
+		if (imagemlogo && imagemlogo.size > 2 * 1024 * 1024)
+			return "O tamanho da imagem não pode ser maior que 2MB";
 
 		return app.sql.connect(async (sql) => {
 			await sql.beginTransaction();
@@ -262,12 +262,12 @@ class Questionario {
 		if (res)
 			return res;
 
-		if (imagemintroducao && imagemintroducao.size > 1024 * 1024)
-			return "A imagem de introdução não pode ter mais que 1MB";
-		if (imagemquestionario && imagemquestionario.size > 1024 * 1024)
-			return "A imagem do questionário não pode ter mais que 1MB";
-		if (imagemlogo && imagemlogo.size > 1024 * 1024)
-			return "A imagem da logo não pode ter mais que 1MB";
+		if (imagemintroducao && imagemintroducao.size > 16 * 1024 * 1024)
+			return "A imagem de introdução não pode ter mais que 16MB";
+		if (imagemquestionario && imagemquestionario.size > 16 * 1024 * 1024)
+			return "A imagem do questionário não pode ter mais que 16MB";
+		if (imagemlogo && imagemlogo.size > 2 * 1024 * 1024)
+			return "A imagem da logo não pode ter mais que 2MB";
 
 		questionario.excluir_imagem_introducao = parseInt(questionario.excluir_imagem_introducao as any) ? 1 : 0;
 		questionario.excluir_imagem_questionario = parseInt(questionario.excluir_imagem_questionario as any) ? 1 : 0;
@@ -344,18 +344,18 @@ class Questionario {
 
 	private static async atualizarImagem(sql: app.Sql, campos: string[],caminho: string, imagem: app.UploadedFile | null | undefined, excluir: boolean, id: number) {
 		for (let campo in campos){
-			let versaoAtual: number = await sql.scalar(`select versao${campo} from questionario where id = ?`, [id]);
+			let versaoAtual: number = await sql.scalar(`select versao${campos[campo]} from questionario where id = ?`, [id]);
 
 			if (excluir) {
 			versaoAtual = -(Math.abs(versaoAtual) + 1);
-			await sql.query(`UPDATE questionario SET ${campo} = ? WHERE id = ?`, [versaoAtual, id]);
+			await sql.query(`UPDATE questionario SET ${campos[campo]} = ? WHERE id = ?`, [versaoAtual, id]);
 
 			if (await app.fileSystem.exists(caminho)) {
 				await app.fileSystem.deleteFile(caminho);
 			}
 			} else if (imagem) {
 			versaoAtual = Math.abs(versaoAtual) + 1;
-			await sql.query(`UPDATE questionario SET versao${campo} = ? WHERE id = ?`, [versaoAtual, id]);
+			await sql.query(`UPDATE questionario SET versao${campos[campo]} = ? WHERE id = ?`, [versaoAtual, id]);
 			await app.fileSystem.saveUploadedFile(caminho, imagem);
 			}	
 		}
@@ -400,7 +400,7 @@ export = Questionario;
 	// 	if (imagem) {
 	// 		arquetipo.excluir_imagem_atual = 0;
 
-	// 		if (imagem.size > 1024 * 1024)
+	// 		if (imagem.size > 2048 * 2048)
 	// 			return "O tamanho da imagem não pode ser maior que 1MB";
 	// 	} else if (parseInt(arquetipo.excluir_imagem_atual as any)) {
 	// 		arquetipo.excluir_imagem_atual = 1;

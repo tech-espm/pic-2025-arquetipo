@@ -48,7 +48,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="col-md-6 <%- ((item && item.versao > 0) ? '' : 'd-none') %>" id="divImagem">
+	<div class="col-md-6 <%- ((item && item.versao > 0) ? 'd-none' : "") %>" id="divImagem">
 		<div class="form-group">
 			<label for="imgImagem">Imagem Atual</label>
 			<img id="imgImagem" src="<%- staticRoot %>/img/arquetipo/<%- (item && item.id) %>.jpg?v=<%- (item && item.versao) %>" style="display: block; width: 100%; max-width: 300px;" />
@@ -103,7 +103,7 @@
 					required: true,
 				},
 				imagem: {
-					tamanhoArquivoMaximoKiB: 1024,
+					tamanhoArquivoMaximoKiB: 4000,
 				},
 			},
 
