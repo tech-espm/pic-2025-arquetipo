@@ -40,7 +40,6 @@ CREATE TABLE usuario (
   email varchar(100) NOT NULL,
   nome varchar(100) NOT NULL,
   idperfil int NOT NULL,
-  idpublico int NOT NULL,
   token char(32) DEFAULT NULL,
   exclusao datetime NULL,
   criacao datetime NOT NULL,
@@ -48,12 +47,10 @@ CREATE TABLE usuario (
   UNIQUE KEY usuario_email_UN (email),
   KEY usuario_exclusao_IX (exclusao),
   KEY usuario_idperfil_FK_IX (idperfil),
-  KEY usuario_idpublico_FK_IX (idpublico),
   CONSTRAINT usuario_idperfil_FK FOREIGN KEY (idperfil) REFERENCES perfil(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT usuario_idpublico_FK FOREIGN KEY (idpublico) REFERENCES publico(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
 
-INSERT INTO usuario (email, nome, idperfil, idpublico, token, criacao) VALUES ('admin@espm.br', 'Administrador', 1, 2, NULL, NOW());
+INSERT INTO usuario (email, nome, idperfil, token, criacao) VALUES ('admin@espm.br', 'Administrador', 1, NULL, NOW());
 
 
 -- DROP TABLE IF EXISTS departamento;
@@ -171,7 +168,6 @@ CREATE TABLE questionario_arquetipo (
 CREATE TABLE submissao (
   id INT NOT NULL AUTO_INCREMENT,
   idquestionario INT NOT NULL,
-  idusuario INT,
   nome VARCHAR(255),
   telefone VARCHAR(15),
   email VARCHAR(255),
