@@ -363,15 +363,14 @@
                     <textarea class="form-control" id="enunciado" rows="5" placeholder="Digite o enunciado"></textarea>
                     </div>
                     <h5>Alternativas</h5>
-                    <div class="list-group" id="listaAlternativas">
-                    <a class="btn list-group-item bg-dark text-white" onclick="adicionarAlternativa()" id="btn-alternativa">
-                        Adicionar alternativa
-                    </a>
-                    </div>
+                    <div class="list-group" id="listaAlternativas"></div>
+					<button type="button" class="btn btn-dark mt-3" onclick="adicionarAlternativa()" id="btn-alternativa">
+						Adicionar Alternativa
+					</button>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary" onClick="salvarQuestao(${questaoId ? questaoId : ''})" >Salvar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                 </div>
                 </div>
             </div>
@@ -403,7 +402,7 @@
             }
 
             alternativa.innerHTML = `
-                <input type="text" class="form-control mr-2" name="alternativaTexto[]" value="${texto}" placeholder="Digite a alternativa" style="flex: 2;">
+                <input type="text" class="form-control mr-2" name="alternativaTexto[]" value="${encodeValue(texto || '')}" placeholder="Digite a alternativa" style="flex: 2;">
                 <select class="form-control mr-2" name="alternativaArquetipo[]" value="${arquetipoid}" style="flex: 1;">
                 <option value="">Selecione</option>
                 ${optionsArquetipos}
@@ -411,7 +410,7 @@
                 <button type="button" class="btn btn-danger btn-sm" onclick="removerAlternativa(this)">X</button>
             `;
 
-            lista.insertBefore(alternativa, document.getElementById('btn-alternativa'));
+            lista.appendChild(alternativa);
         }
 
         function removerAlternativa(btn) {
