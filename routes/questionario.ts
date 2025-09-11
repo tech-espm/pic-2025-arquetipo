@@ -77,7 +77,7 @@ class QuestionarioRoute {
 			departamentos = await Departamento.obter(iddepartamento);
 		}
 
-		let arquetipos = await Arquetipo.listarPorDepartamento(item.iddepartamento);
+		let arquetipos = await Arquetipo.listarPorDepartamentos(item.iddepartamento as number[]);
 
 		res.render("questionario/editar", {
 			titulo: "Editar Questionário",

@@ -20,12 +20,11 @@
 
     <div class="col-md-4">
         <div class="form-group">
-            <label for="iddepartamento">Departamento</label>
-            <select id="iddepartamento" name="iddepartamento" class="form-control" size="1">
-                <option value="">Selecione...</option>
+            <input type="hidden" id="iddepartamento" name="iddepartamento" />
+            <label for="iddepartamentoselect">Departamento</label>
+            <select id="iddepartamentoselect" class="form-control" size="1">
                 <% for (let i=0; i < departamentos.length; i++) { %>
-                    <option value="<%= departamentos[i].id %>"
-                        <%-((item && item.iddepartamento==departamentos[i].id) ? 'selected="selected"' : '' ) %>>
+                    <option value="<%= departamentos[i].id %>">
                         <%= departamentos[i].nome %>
                     </option>
                     <% } %>
@@ -310,11 +309,13 @@
         
         CKEDITOR.replace("textointroducao");
         
+        prepareMultiselect("#iddepartamentoselect", { title: "Departamento", label: "Departamento" });
         prepareMultiselect("#idpublicoalvoselect", { title: "Público-alvo", label: "Público-alvo" });
 
 
         //<% if (item) { %>
-        
+
+        setMultiselectSelection("#iddepartamentoselect", [<%- item.iddepartamento.map(d => d.iddepartamento).join(",") %>]);
         setMultiselectSelection("#idpublicoalvoselect", [<%- item.idpublicosalvos.map(d => d.idpublicoalvo).join(",") %>]);
         
         prepareMultiselect("#iddarquetiposselect", { title: "Arquétipo", label: "Arquétipo" });
@@ -584,6 +585,7 @@
 
                 Swal.wait();
 
+                $("#iddepartamento").val(getMultiselectSelection("#iddepartamentoselect").join(","));
                 $("#idpublicosalvos").val(getMultiselectSelection("#idpublicoalvoselect").join(","));
                 $("#hiddentextointroducao").val(CKEDITOR.instances.textointroducao.getData());
 
