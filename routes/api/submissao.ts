@@ -60,7 +60,8 @@ class SubmissaoApiRoute {
 		}
 
 		if ((paraFuncionarios || paraAlunos) && !paraTodos){
-			const u = await Usuario.cookie(req, res, false, false, paraAlunos);
+			// refazer lógica para autorização
+			const u = await Usuario.cookie(req, res, false, false);
 			if(!u){
 				return;
 			}

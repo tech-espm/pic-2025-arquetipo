@@ -54,7 +54,8 @@ class SubmissaoRoute {
 			}
 		}
 
-		const u = await Usuario.cookie(req,null,false,false,paraAlunos);
+		// refazer lógica para autorização
+		const u = await Usuario.cookie(req,null,false,false);
 
 		if ((paraAlunos || paraFuncionarios) && !paraTodos) {
 

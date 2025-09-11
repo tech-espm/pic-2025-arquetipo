@@ -55,6 +55,7 @@ class QuestionarioApiRoute {
 @app.http.post()
 @app.route.formData()
 public static async editar(req: app.Request, res: app.Response) {
+	// verificar se os arquetipos batem com o questionario;
 	const u = await Usuario.cookie(req, res, false, false);
 	if (!u)
 		return;

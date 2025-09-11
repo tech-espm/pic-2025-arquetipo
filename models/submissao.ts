@@ -5,7 +5,6 @@ import Validacao = require("../utils/validacao");
 interface Submissao {
 	id: number;
 	idquestionario: number;
-	idusuario: number | null;
 	nome: string | null;
 	telefone: string | null;
 	email: string | null;
@@ -21,8 +20,8 @@ public static async criarOuEditar(submissao: Submissao, idquestionario: number):
 	try {
 		await app.sql.connect(async (sql) => {
 			let existente : number = await sql.scalar(
-				"SELECT id FROM submissao WHERE idquestionario = ? AND (email = ? or idusuario = ?)",
-				[idquestionario, submissao.email, submissao.idusuario]
+				"SELECT id FROM submissao WHERE idquestionario = ? AND email = ?",
+				[idquestionario, submissao.email]
 			);
 			
 			await sql.beginTransaction();
@@ -43,11 +42,10 @@ public static async criarOuEditar(submissao: Submissao, idquestionario: number):
 				submissao.id = existente;
 			} else {
 				await sql.query(
-					`INSERT INTO submissao (idquestionario, idusuario, nome, telefone, email, resposta)
-					 VALUES (?, ?, ?, ?, ?, ?)`,
+					`INSERT INTO submissao (idquestionario, nome, telefone, email, resposta)
+					 VALUES (?, ?, ?, ?, ?)`,
 					[
 						submissao.idquestionario,
-						submissao.idusuario,
 						submissao.nome,
 						submissao.telefone,
 						submissao.email,
@@ -77,16 +75,14 @@ public static async criarOuEditar(submissao: Submissao, idquestionario: number):
 		if (!s.resposta) 
 			return "Resposta obrigatória";
 
-		if (!s.idusuario) {
-			if (!s.nome || s.nome.trim().length === 0)
-				return "Nome obrigatório para respondentes externos";
+		if (!s.nome || s.nome.trim().length === 0)
+			return "Nome obrigatório para respondentes externos";
 
-            if (!s.email) 
-			    return "Email inválido";
+		if (!s.email) 
+			return "Email inválido";
 
-		    if (!s.telefone)
-			    return "Telefone inválido";
-		}
+		if (!s.telefone)
+			return "Telefone inválido";
 
 		return null; 
 	}
@@ -98,7 +94,7 @@ public static async criarOuEditar(submissao: Submissao, idquestionario: number):
 
 		try {
 			await app.sql.connect(async (sql) => {
-				await sql.query(`INSERT INTO submissao (idquestionario, idusuario, nome, telefone, email, resposta) VALUES (?, ?, ?, ?, ?, ?)`, [s.idquestionario, s.idusuario, s.nome, s.telefone, s.email, JSON.stringify(s.resposta)]);
+				await sql.query(`INSERT INTO submissao (idquestionario, nome, telefone, email, resposta) VALUES (?, ?, ?, ?, ?)`, [s.idquestionario, s.nome, s.telefone, s.email, JSON.stringify(s.resposta)]);
 				s.id = await sql.scalar("SELECT LAST_INSERT_ID()");
 			});
 		} catch (e) {
@@ -113,7 +109,7 @@ public static async criarOuEditar(submissao: Submissao, idquestionario: number):
 
 		await app.sql.connect(async (sql) => {
 			s = await sql.scalar(`
-				SELECT id, idquestionario, idusuario, nome, telefone, email, resposta FROM submissao WHERE id = ?`, [id]);
+				SELECT id, idquestionario, nome, telefone, email, resposta FROM submissao WHERE id = ?`, [id]);
 		});
 
 		return s || null;
@@ -123,7 +119,7 @@ public static async criarOuEditar(submissao: Submissao, idquestionario: number):
 
 		return await app.sql.connect(async (sql) => {
 			return await sql.scalar(`
-				SELECT resposta FROM submissao WHERE (email = ? or idusuario = ?) and idquestionario = ?`, [email, idusuario,idquestionario]);
+				SELECT resposta FROM submissao WHERE email = ? and idquestionario = ?`, [email, idquestionario]);
 		});
 	}
 
