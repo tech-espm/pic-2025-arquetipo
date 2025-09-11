@@ -47,7 +47,7 @@ CREATE TABLE usuario (
   UNIQUE KEY usuario_email_UN (email),
   KEY usuario_exclusao_IX (exclusao),
   KEY usuario_idperfil_FK_IX (idperfil),
-  CONSTRAINT usuario_idperfil_FK FOREIGN KEY (idperfil) REFERENCES perfil(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT usuario_idperfil_FK FOREIGN KEY (idperfil) REFERENCES perfil(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
 
 INSERT INTO usuario (email, nome, idperfil, token, criacao) VALUES ('admin@espm.br', 'Administrador', 1, NULL, NOW());
