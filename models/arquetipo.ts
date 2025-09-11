@@ -142,6 +142,8 @@ class Arquetipo {
 			await sql.query(`INSERT INTO arquetipo_departamento (idarquetipo, iddepartamento) VALUES (?, ?)`, [id, toAdd[i]]);
 	};
 
+
+	//Deveria ter o try?
 	public static async criar(arquetipo: Arquetipo, imagem?: app.UploadedFile | null): Promise<string | number> {
 		const res = Arquetipo.validar(arquetipo, true);
 		if (res)
