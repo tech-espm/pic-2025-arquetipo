@@ -83,8 +83,8 @@ class IndexRoute {
 		res.redirect(app.root + "/");
 	}
 
-	@app.route.methodName("s/:url")
-	public static async s(req: app.Request, res: app.Response) {
+	@app.route.methodName("teste/:url")
+	public static async teste(req: app.Request, res: app.Response) {
 		const url = req.params["url"];
 
 		if (!url){
