@@ -78,7 +78,9 @@ class SubmissaoRoute {
 				item: item,
 				paraTodos: paraTodos,
 				aluno: aluno,
-				resposta: resposta
+				resposta: resposta,
+				urlSite: appsettings.urlSite,
+				ssoRedirBase: appsettings.ssoRedirBase,
 			})
 	}
 
