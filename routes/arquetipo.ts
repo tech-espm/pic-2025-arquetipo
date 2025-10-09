@@ -85,7 +85,7 @@ class ArquetipoRoute {
 				datatables: true,
 				xlsx: true,
 				usuario: u,
-				lista: await Arquetipo.listar()
+				lista: await Arquetipo.listar(u.id, u.idperfil),
 			});
 	}
 }

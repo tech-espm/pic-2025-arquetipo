@@ -77,8 +77,6 @@ class QuestionarioRoute {
 			departamentos = await Departamento.obter(iddepartamento);
 		}
 
-		let arquetipos = await Arquetipo.listarPorDepartamentos(item.iddepartamento as number[]);
-
 		res.render("questionario/editar", {
 			titulo: "Editar Questionário",
 			datatables: true,
@@ -86,7 +84,7 @@ class QuestionarioRoute {
 			departamentos: departamentos,
 			publicosalvos: publicos.lista,
 			disponibilidades: disponibilidades.lista,
-			arquetipos: arquetipos,
+			arquetipos: await Arquetipo.listarCombo(u.id, u.idperfil),
 			item: item
 		});
 

@@ -1,4 +1,5 @@
 ﻿import app = require("teem");
+import Perfil = require("../enums/perfil");
 
 interface Arquetipo {
 	id: number;
@@ -51,15 +52,38 @@ class Arquetipo {
 		return null;
 	}
 
-	public static listar(): Promise<Arquetipo[]> {
+	public static listar(idusuario: number, idperfil: Perfil): Promise<Arquetipo[]> {
 		return app.sql.connect(async (sql) => {
-			return (await sql.query("select id, nome, nomeexterno, descricaocurta, descricaocompleta from arquetipo")) || [];
+			if (idperfil == Perfil.Administrador)
+				return (await sql.query("select a.id, a.nome, a.nomeexterno, a.descricaocurta, (select group_concat(d.nome order by d.nome asc separator ', ') from arquetipo_departamento ad inner join departamento d on d.id = ad.iddepartamento where ad.idarquetipo = a.id) departamentos from arquetipo a")) || [];
+
+			return (await sql.query(`select tmp.id, a.nome, a.nomeexterno, a.descricaocurta,
+			(select group_concat(d.nome order by d.nome asc separator ', ') from arquetipo_departamento ad inner join departamento d on d.id = ad.iddepartamento where ad.idarquetipo = tmp.id) departamentos
+			from (
+				select distinct ad.idarquetipo id
+				from usuario_departamento ud
+				inner join arquetipo_departamento ad on ad.iddepartamento = ud.iddepartamento
+				where ud.idusuario = ?
+			) tmp
+			inner join arquetipo a on a.id = tmp.id
+			`, [idusuario])) || [];
 		});
 	}
 
-	public static listarCombo(): Promise<Arquetipo[]> {
+	public static listarCombo(idusuario: number, idperfil: Perfil): Promise<Arquetipo[]> {
 		return app.sql.connect(async (sql) => {
-			return (await sql.query("select id, nome, nomeexterno, descricaocurta, descricaocompleta from arquetipo order by nome asc")) || [];
+			if (idperfil == Perfil.Administrador)
+				return (await sql.query("select id, nome from arquetipo order by nome asc")) || [];
+
+			return (await sql.query(`select tmp.id, a.nome from (
+				select distinct ad.idarquetipo id
+				from usuario_departamento ud
+				inner join arquetipo_departamento ad on ad.iddepartamento = ud.iddepartamento
+				where ud.idusuario = ?
+			) tmp
+			inner join arquetipo a on a.id = tmp.id
+			order by a.nome asc
+			`, [idusuario])) || [];
 		});
 	}
 
@@ -87,19 +111,6 @@ class Arquetipo {
 		});
 	}
 
-	public static listarPorDepartamentos(iddepartamento: number[]): Promise<Arquetipo[]> {
-		return app.sql.connect(async (sql) => {
-				if (!iddepartamento || iddepartamento.length == 0)
-					return [];
-				const ids = [];
-				iddepartamento.forEach((v, i) => {
-					ids.push(v["iddepartamento"]);
-				});
-				const lista: Arquetipo[] = await sql.query(`select distinct a.id, a.nome from arquetipo_departamento ad inner join arquetipo a on ad.idarquetipo = a.id where iddepartamento in (?)`, [ids]);
-				return lista || [];
-		});
-	}
-
 	public static obterPeloNome(nome: string): Promise<Arquetipo> {
 		return app.sql.connect(async (sql) => {
 			const lista: Arquetipo[] = await sql.query("select id, nome, nomeexterno, descricaocurta, descricaocompleta from arquetipo where nome = ?", [nome]);
@@ -114,8 +125,6 @@ class Arquetipo {
 			return lista[0];
 		});
 	}
-
-	
 
 	private static async merge(sql: app.Sql, id: number, departamentos: number[] | null) {
 		if (!departamentos)
@@ -246,7 +255,7 @@ class Arquetipo {
 			try {
 				await sql.query("delete from arquetipo where id = ?", [id]);
 
-				return (sql.affectedRows ? null : "Arqu´rtipo não encontrado");
+				return (sql.affectedRows ? null : "Arquétipo não encontrado");
 			} catch (e) {
 				if (e.code) {
 					switch (e.code) {
