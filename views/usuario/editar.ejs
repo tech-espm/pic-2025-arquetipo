@@ -46,7 +46,7 @@
 	prepareMultiselect("#iddepartamentoselect", { title: "Departamento", label: "Departamento" });
 
 	//<% if (item) { %>
-	setMultiselectSelection("#iddepartamentoselect", [<%- item.iddepartamento.map(d => d.iddepartamento).join(",") %>]);
+	setMultiselectSelection("#iddepartamentoselect", <%- JSON.stringify(item.iddepartamento) %>);
 	//<% } %>
 
 	$("#form").validate({

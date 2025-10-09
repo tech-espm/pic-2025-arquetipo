@@ -57,8 +57,11 @@ class Departamento {
 	public static obter(id: number | number[]): Promise<Departamento | Departamento[] | null> {
 		return app.sql.connect(async (sql) => {
 			if (id instanceof Array) {
-				if (id.length === 0) return [];
-				const lista: Departamento[] = await sql.query(`select id, nome from departamento where id in (?)`, [id]);
+				if (!id.length) return [];
+				for (let x = 0; x < id.length; x++) {
+					id[x] = parseInt(id[x] as any) || 0;
+				}
+				const lista: Departamento[] = await sql.query(`select id, nome from departamento where id in (${id.join(",")})`);
 				return lista || [];
 			} else {
 				const lista: Departamento[] = await sql.query("select id, nome from departamento where id = ?", [id]);

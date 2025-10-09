@@ -13,7 +13,7 @@ interface Usuario {
 	nome: string;
 	idperfil: Perfil;
 	criacao: string;
-	iddepartamento: any[] | string | null;
+	iddepartamento: number[] | string | null;
 
 	// Utilizados apenas através do cookie
 	admin: boolean;
@@ -181,7 +181,7 @@ class Usuario {
 				return null;
 
 			const usuario = lista[0];
-			usuario.iddepartamento = await sql.query("select iddepartamento from usuario_departamento where idusuario = ?", [id]);
+			usuario.iddepartamento = (await sql.query("select iddepartamento from usuario_departamento where idusuario = ?", [id]) as any[]).map(e => e.iddepartamento);
 
 			return usuario;
 		});
