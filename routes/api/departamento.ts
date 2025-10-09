@@ -6,15 +6,9 @@ import Usuario = require("../../models/usuario");
 class DepartamentoApiRoute {
 	@app.http.post()
 	public static async criar(req: app.Request, res: app.Response) {
-
-		const u = await Usuario.cookie(req, res, false, true);
+		const u = await Usuario.cookie(req, res, true);
 		if (!u)
 			return;
-
-		if (!u.admin || u.diretor){
-			res.status(403).json("Usuário não tem permissão para criar departamentos");
-			return;
-		}
 
 		const erro = await Departamento.criar(req.body);
 
@@ -28,7 +22,7 @@ class DepartamentoApiRoute {
 
 	@app.http.post()
 	public static async editar(req: app.Request, res: app.Response) {
-		const u = await Usuario.cookie(req, res, false, true);
+		const u = await Usuario.cookie(req, res, true);
 		if (!u)
 			return;
 
@@ -44,7 +38,7 @@ class DepartamentoApiRoute {
 
 	@app.http.delete()
 	public static async excluir(req: app.Request, res: app.Response) {
-		const u = await Usuario.cookie(req, res, false, true);
+		const u = await Usuario.cookie(req, res, true);
 		if (!u)
 			return;
 

@@ -4,8 +4,8 @@ import Usuario = require("../models/usuario");
 
 class DepartamentoRoute {
 	public static async criar(req: app.Request, res: app.Response) {
-		let u = await Usuario.cookie(req);
-		if (!u || !u.admin)
+		let u = await Usuario.cookie(req, null, true);
+		if (!u)
 			res.redirect(app.root + "/acesso");
 		else
 			res.render("departamento/editar", {
@@ -17,8 +17,8 @@ class DepartamentoRoute {
 	}
 
 	public static async editar(req: app.Request, res: app.Response) {
-		let u = await Usuario.cookie(req);
-		if (!u || !u.admin) {
+		let u = await Usuario.cookie(req, null, true);
+		if (!u) {
 			res.redirect(app.root + "/acesso");
 		} else {
 			let id = parseInt(req.query["id"] as string);
@@ -38,8 +38,8 @@ class DepartamentoRoute {
 	}
 
 	public static async listar(req: app.Request, res: app.Response) {
-		let u = await Usuario.cookie(req);
-		if (!u || !u.admin)
+		let u = await Usuario.cookie(req, null, true);
+		if (!u)
 			res.redirect(app.root + "/acesso");
 		else
 			res.render("departamento/listar", {
