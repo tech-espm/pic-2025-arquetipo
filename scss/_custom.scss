@@ -238,3 +238,16 @@ table.dataTable {
 .my-ncard, .mb-ncard, .m-ncard {
 	margin-bottom: -$card-spacer-x !important;
 }
+
+.accordion > .card > .card-header button > b::before, .card > .card-header > a::before {
+	content: "\f2d2";
+	-webkit-font-smoothing: antialiased;
+	display: inline-block;
+	font-family: "Font Awesome 5 Free";
+	font-style: normal;
+	font-variant: normal;
+	font-weight: 400;
+	text-rendering: auto;
+	line-height: 1;
+	margin-right: 0.5rem;
+}

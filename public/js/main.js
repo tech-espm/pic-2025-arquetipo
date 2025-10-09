@@ -157,9 +157,10 @@ window.prepareCopyHandler = function (modal, selector) {
 
 		if (!btn.tooltipOK) {
 			btn.tooltipOK = true;
+			const title = btn.getAttribute("title") || "Copiar";
 			btn.setAttribute("title", "Copiado!");
 			$(btn).tooltip({ trigger: "manual" });
-			btn.setAttribute("title", "Copiar");
+			btn.setAttribute("title", title);
 		}
 
 		if (lastTooltipTimeout) {
