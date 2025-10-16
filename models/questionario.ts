@@ -46,7 +46,7 @@ class Questionario {
 		if (!questionario.nomeexterno || !(questionario.nomeexterno = questionario.nomeexterno.normalize().trim()) || questionario.nomeexterno.length > 100)
 			return "Nome externo inválido";
 
-		if (!questionario.url || !(questionario.url = questionario.url.normalize().trim()) || questionario.url.length > 100 || URL.canParse(questionario.url))
+		if (!questionario.url || !(questionario.url = questionario.url.normalize().trim()) || questionario.url.length > 100)
 			return "URL inválida.";
 
 		if (!questionario.descricao || !(questionario.descricao = questionario.descricao.normalize().trim()) || questionario.descricao.length > 1000)
