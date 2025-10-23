@@ -33,14 +33,9 @@ class ArquetipoRoute {
 		}
 
 		let id = parseInt(req.query["id"] as string);
-		let nome = req.query["nome"] as string;
 		let item: Arquetipo = null;
 
-		if (!isNaN(id)) {
-			item = await Arquetipo.obter(id);
-		} else if (nome) {
-			item = await Arquetipo.obterPeloNome(nome);
-		}
+		item = await Arquetipo.obter(id || 0, u.id, u.idperfil);
 
 		if (!item) {
 			res.render("index/nao-encontrado", {
@@ -51,7 +46,7 @@ class ArquetipoRoute {
 		} else {
 			res.render("arquetipo/editar", {
 				titulo: "Editar Arquétipo",
-				departamentos: Departamento.listarCombo(u.id, u.idperfil),
+				departamentos: await Departamento.listarCombo(u.id, u.idperfil),
 				usuario: u,
 				item: item,
 			});

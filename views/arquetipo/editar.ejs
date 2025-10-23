@@ -82,7 +82,7 @@
 	prepareMultiselect("#iddepartamentoselect", { title: "Departamento", label: "Departamento" });
 
 	//<% if (item) { %>
-	setMultiselectSelection("#iddepartamentoselect", [<%- item.iddepartamento.map(d => d.iddepartamento).join(",") %>]);
+	setMultiselectSelection("#iddepartamentoselect", [<%- item.iddepartamento.join(",") %>]);
 	//<% } %>
 
 		$("#form").validate({

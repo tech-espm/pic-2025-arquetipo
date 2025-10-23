@@ -5,6 +5,7 @@ import Submissao = require("../../models/submissao");
 import Questionario = require("../../models/questionario");
 import { json } from "express";
 import Publico = require("../../enums/publico");
+import Perfil = require("../../enums/perfil");
 
 class SubmissaoApiRoute {
 
@@ -62,7 +63,7 @@ class SubmissaoApiRoute {
 		}
 
 		const r = await Submissao.criarOuEditar(req.body, parseInt(req.body.idquestionario));
-		const r2 = await Arquetipo.obter(parseInt(req.body.resposta.arquetipoid));
+		const r2 = await Arquetipo.obter(parseInt(req.body.resposta.arquetipoid), 0, Perfil.Administrador);
 
 		if (typeof r === "string") 
 			res.status(400);

@@ -1,16 +1,18 @@
 <style>
   #questionario {
-  --cor-destaque: <%- item.cordestaque %>;
-  --cor-texto-destaque: <%- item.cortextodestaque %>;
-  --cor-fundo-card: <%- item.corfundocard %>;
-  --cor-texto-card: <%- item.cortextocard %>;
-  --cor-fundo-pagina: <%- item.corfundopagina %>;
-}
+    --cor-destaque: <%- item.cordestaque %>;
+    --cor-texto-destaque: <%- item.cortextodestaque %>;
+    --cor-fundo-card: <%- item.corfundocard %>;
+    --cor-texto-card: <%- item.cortextocard %>;
+    --cor-fundo-pagina: <%- item.corfundopagina %>;
+    min-height: 100vh;
+  }
 
   body {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    background-attachment: fixed;
     min-height: 100vh;
     color :black;
     transition: background-image 0.4s ease-in-out; 
@@ -27,12 +29,16 @@
     opacity: 1;
   }
 
-.card-questao {
+  .tela > .container-fluid > .row {
+    min-height: 100vh;
+  }
+
+  .card-questao {
     background-color: var(--cor-fundo-pagina);
   }
 
 
-.zero-padding {
+  .zero-padding {
     padding: 0 !important;
   }
   .alternativa-card {
@@ -135,60 +141,52 @@
 
 <!-- <a href="<%- urlCallback %>" target="_blank">Visualizar</a> -->
 
-<div id="questionario" class="container-fluid">
-  <div class="row">
-    <div class="col-12">
-
-      <div class="tela ativa" id="introducao" data-background="<%- staticRoot %>/img/questionario/introducao/<%- (item && item.id) %>.jpg?v=<%- (item && item.versaointroducao) %>">
-        <div class="container">
-          <div class="row justify-content-center align-items-center vh-100">
-            <div class="col-12 col-md-8 col-lg-6 text-center">
-              
-              <div class="cor-texto-introducao"><%- item.textointroducao %></div>
-              
-              <button class="btn btn-primary btn-lg mt-3" onclick="questionario.avancar()">COMEÇAR</button>
-
-            </div>
-          </div>
+<div id="questionario">
+  <div class="tela ativa" id="introducao" data-background="<%- staticRoot %>/img/questionario/introducao/<%- (item && item.id) %>.jpg?v=<%- (item && item.versaointroducao) %>">
+    <div class="container">
+      <div class="row justify-content-center align-items-center vh-100">
+        <div class="col-12 col-md-8 col-lg-6 text-center">
+          <div class="cor-texto-introducao"><%- item.textointroducao %></div>
+          <button class="btn btn-primary btn-lg mt-3" onclick="questionario.avancar()">COMEÇAR</button>
         </div>
       </div>
-      
-      <% if (paraTodos) { %>
-      <!-- <div class="tela" id="cadastro">
-        <form id="formcadastro">
-          <input type="hidden" id="idquestionario" name="idquestionario" value="<%- item.id %>">
-          <div class="form-floating mb-3">
-            <input type="text" id="nome" name="nome" class="form-control" placeholder="Nome" required autofocus>
-            <label for="nome">Nome</label>
-          </div>
-          <div class="form-floating mb-3">
-            <input type="email" id="email" name="email" class="form-control" placeholder="Email" required>
-            <label for="email">Email</label>
-          </div>
-          <div class="form-floating mb-3">
-            <input type="tel" id="telefone" name="telefone" class="form-control" placeholder="Telefone" required>
-            <label for="telefone">Telefone</label>
-          </div>
-          <button type="submit" class="btn btn-primary">Avançar</button>
-        </form>
-      </div> -->
-      <% } %>
+    </div>
+  </div>
 
- <% item.questoes.forEach((questao) => { %>
-      <div class="tela questao" id="<%- questao.id %>" data-questao="<%- questao.id %>" data-obrigatoria="true" data-background="<%- staticRoot %>/img/questionario/<%- (item && item.id) %>.jpg?v=<%- (item && item.versaoquestionario) %>">
-        <div class="container-fluid vh-100 d-flex align-items-center">
-          <div class="row w-100">
+  <% if (paraTodos) { %>
+  <!-- <div class="tela" id="cadastro">
+    <form id="formcadastro">
+      <input type="hidden" id="idquestionario" name="idquestionario" value="<%- item.id %>">
+      <div class="form-floating mb-3">
+        <input type="text" id="nome" name="nome" class="form-control" placeholder="Nome" required autofocus>
+        <label for="nome">Nome</label>
+      </div>
+      <div class="form-floating mb-3">
+        <input type="email" id="email" name="email" class="form-control" placeholder="Email" required>
+        <label for="email">Email</label>
+      </div>
+      <div class="form-floating mb-3">
+        <input type="tel" id="telefone" name="telefone" class="form-control" placeholder="Telefone" required>
+        <label for="telefone">Telefone</label>
+      </div>
+      <button type="submit" class="btn btn-primary">Avançar</button>
+    </form>
+  </div> -->
+  <% } %>
 
-            <!-- Coluna 1: Título e Enunciado -->
-            <div class="col-md-4 d-flex flex-column justify-content-start">
-              <div class="text-left">
-                <h2 class="h4 fw-normal"><%- questao.titulo %></h2>
-                <p class="lead fs-5"><%- questao.enunciado %></p>
-              </div>
-            </div>
+  <% item.questoes.forEach((questao) => { %>
+  <div class="tela questao" id="<%- questao.id %>" data-questao="<%- questao.id %>" data-obrigatoria="true" data-background="<%- staticRoot %>/img/questionario/<%- (item && item.id) %>.jpg?v=<%- (item && item.versaoquestionario) %>">
+    <div class="container-fluid">
+      <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6 d-flex flex-column justify-content-center p-4">
+          <div class="card">
+            <div class="card-header">
+              Header
+            </div> <!-- card-header -->
+            <div class="card-body py-0">
+              <h2 class="h4 fw-normal mt-4 mb-2"><%- questao.titulo %></h2>
+              <p class="lead fs-5 mt-2 mb-4"><%- questao.enunciado %></p>
 
-            <!-- Coluna 2: Alternativas -->
-            <div class="col-md-4 d-flex flex-column justify-content-center">
               <div class="alternativas-container" id="alternativas-q-<%- questao.id %>">
                 <% questao.alternativas.forEach((alt) => { %>
                   <div class="form-check-alternativa">
@@ -208,41 +206,37 @@
                     </label>
                   </div>
                 <% }) %>
-              </div>
-            </div>
+              </div> <!-- alternativas-container -->
 
-            <!-- Coluna 3: Botões de Navegação -->
-            <div class="col-md-4 d-flex flex-column justify-content-end">
-              <div class="container-fluid px-0">
-                <div class="row">
-                  <div class="col-6 btn btn-navegacao-voltar border-0 rounded-0" onclick="questionario.voltar()">
-                    <p class="m-0 fw-bold">Voltar</p>
-                  </div>
-                  <div class="col-6 btn btn-navegacao-avancar border-0 rounded-0" onclick="questionario.avancar()">
-                    <p class="m-0 fw-bold">Avançar</p>
-                  </div>
+              <div class="row" style="margin: 1.5rem -1.25rem 0;">
+                <div class="col-6 btn btn-navegacao-voltar border-0 rounded-0 p-3" onclick="questionario.voltar()">
+                  <span class="fw-bold">Voltar</span>
+                </div>
+                <div class="col-6 btn btn-navegacao-avancar border-0 rounded-0 p-3" onclick="questionario.avancar()">
+                  <span class="fw-bold">Avançar</span>
                 </div>
               </div>
-            </div>
 
-          </div>
-        </div>
+            </div> <!-- card-body -->
+          </div> <!-- card -->
+        </div> <!-- col-md-8 col-lg-6 -->
+      </div> <!-- row -->
+    </div> <!-- container-fluid -->
 
-      </div>
+  </div> <!-- tela questao -->
 
-      <% }) %>
+  <% }) %>
 
-      <div class="tela" id="conclusao" data-background="<%- staticRoot %>/img/questionario/<%- (item && item.id) %>.jpg?v=<%- (item && item.versaoquestionario) %>">
-        <div class="container">
-          <div class="row">
-            <div class="col-8" id="arquetipo"></div>
-            <div class="col-4"><img id="imgconclusao" src="" alt=""></div>
-          </div>
-        </div>
+  <div class="tela" id="conclusao" data-background="<%- staticRoot %>/img/questionario/<%- (item && item.id) %>.jpg?v=<%- (item && item.versaoquestionario) %>">
+    <div class="container">
+      <div class="row">
+        <div class="col-8" id="arquetipo"></div>
+        <div class="col-4"><img id="imgconclusao" src="" alt=""></div>
       </div>
     </div>
   </div>
-</div>
+
+</div> <!-- id="questionario" -->
 
 <%- contentFor("scripts") %>
 <script>

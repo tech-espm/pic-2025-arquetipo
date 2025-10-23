@@ -16,7 +16,7 @@ class ArquetipoApiRoute {
 			res.status(400).json("Id inválido");
 			return;
 		}
-		const arquetipo = await Arquetipo.obter(id);
+		const arquetipo = await Arquetipo.obter(id, u.id, u.idperfil);
 
 		if (!arquetipo) {
 			res.status(404).json("Arquetipo não encontrado");
@@ -33,9 +33,7 @@ class ArquetipoApiRoute {
 		if (!u)
 			return;
 
-		//Perguntar: o quão fundo eu vou na regra de negócio da api? Nesse caso, o admin pode criar arquetipos, mas o diretor não pode criar arquetipos que não sejam de um dos seus departamentos e nem o usuario comum.
-
-		const r = await Arquetipo.criar(req.body, req.uploadedFiles.imagem);
+		const r = await Arquetipo.criar(req.body, u.id, u.idperfil, req.uploadedFiles.imagem);
 
 		if (typeof r === "string")
 			res.status(400);
@@ -50,9 +48,7 @@ class ArquetipoApiRoute {
 		if (!u)
 			return;
 
-		const r = await Arquetipo.editar(req.body, req.uploadedFiles.imagem);
-
-		//Perguntar: o quão fundo eu vou na regra de negócio? Nesse caso, o admin pode editar arquetipos, mas o diretor não pode editar arquetipos que não sejam de um dos seus departamentos.		
+		const r = await Arquetipo.editar(req.body, u.id, u.idperfil, req.uploadedFiles.imagem);
 
 		if (typeof r === "string")
 			res.status(400);
@@ -66,7 +62,6 @@ class ArquetipoApiRoute {
 		if (!u)
 			return;
 
-		//Perguntar: o quão fundo eu vou na regra de negócio? Nesse caso, o admin pode criar arquetipos, mas o diretor não pode criar arquetipos que não sejam de um dos seus departamentos.
 		if (!(u.admin || u.diretor)) {
 			res.status(403).json("Usuário não tem permissão para excluir arquetipos");
 			return;
@@ -79,7 +74,7 @@ class ArquetipoApiRoute {
 			return;
 		}
 
-		const erro = await Arquetipo.excluir(id);
+		const erro = await Arquetipo.excluir(id, u.id, u.idperfil);
 
 		if (erro) {
 			res.status(400).json(erro);

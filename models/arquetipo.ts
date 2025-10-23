@@ -87,42 +87,23 @@ class Arquetipo {
 		});
 	}
 
-	public static obter(id: number): Promise<Arquetipo | null>;
-	public static obter(id: number[]): Promise<Arquetipo[]>;
-	public static obter(id: number | number[]): Promise<Arquetipo | Arquetipo[] | null> {
+	public static obter(id: number, idusuario: number, idperfil: Perfil): Promise<Arquetipo | null> {
 		return app.sql.connect(async (sql) => {
-			if (id instanceof Array) {
-				if (id.length === 0) return [];
-				const lista: Arquetipo[] = await sql.query(`select id, nome, nomeexterno, versao, descricaocurta, descricaocompleta from arquetipo where id in (?)`, [id]);
-
-				for (let x = 0; x < lista.length;x++){
-					lista[x].iddepartamento = await sql.query("select iddepartamento from arquetipo_departamento where idarquetipo = ?", [id]);
-				}
-
-				return lista || [];
-			} else {
-				const lista: Arquetipo[] = await sql.query("select id, nome, nomeexterno, versao, descricaocurta, descricaocompleta from arquetipo where id = ?", [id]);
-				if (!lista || !lista[0])
-					return null;
-
-				lista[0].iddepartamento = await sql.query("select iddepartamento from arquetipo_departamento where idarquetipo = ?", [id]);
-				return lista[0];
-			}
-		});
-	}
-
-	public static obterPeloNome(nome: string): Promise<Arquetipo> {
-		return app.sql.connect(async (sql) => {
-			const lista: Arquetipo[] = await sql.query("select id, nome, nomeexterno, descricaocurta, descricaocompleta from arquetipo where nome = ?", [nome]);
-
+			const lista: Arquetipo[] = await sql.query("select id, nome, nomeexterno, versao, descricaocurta, descricaocompleta from arquetipo where id = ?", [id]);
 			if (!lista || !lista[0])
 				return null;
 
-			const arquetipo = lista[0];
+			lista[0].iddepartamento = (await sql.query(`SELECT iddepartamento FROM arquetipo_departamento WHERE idarquetipo = ?`, [id]) as any[]).map(d => d.iddepartamento);
 
-				arquetipo.iddepartamento = await sql.query("select iddepartamento from arquetipo_departamento where idarquetipo = ?", [arquetipo.id]);
+			if (idperfil === Perfil.Administrador) {
+				return lista[0];
+			} else {
+				const usuarioDepartamentos: number[] = (await sql.query("select iddepartamento from usuario_departamento where idusuario = ?", [idusuario]) as any[]).map(d => d.iddepartamento);
+				if (usuarioDepartamentos.some(iddepartamento => (lista[0].iddepartamento as number[]).includes(iddepartamento)))
+					return lista[0];
+			}
 
-			return lista[0];
+			return null;
 		});
 	}
 
@@ -151,9 +132,7 @@ class Arquetipo {
 			await sql.query(`INSERT INTO arquetipo_departamento (idarquetipo, iddepartamento) VALUES (?, ?)`, [id, toAdd[i]]);
 	};
 
-
-	//Deveria ter o try?
-	public static async criar(arquetipo: Arquetipo, imagem?: app.UploadedFile | null): Promise<string | number> {
+	public static async criar(arquetipo: Arquetipo, idusuario: number, idperfil: Perfil, imagem?: app.UploadedFile | null): Promise<string | number> {
 		const res = Arquetipo.validar(arquetipo, true);
 		if (res)
 			return res;
@@ -163,6 +142,17 @@ class Arquetipo {
 
 		return app.sql.connect(async (sql) => {
 			await sql.beginTransaction();
+
+			if (idperfil !== Perfil.Administrador) {
+				if (arquetipo.iddepartamento) {
+					const usuarioDepartamentos: number[] = (await sql.query("select iddepartamento from usuario_departamento where idusuario = ?", [idusuario]) as any[]).map(d => d.iddepartamento);
+					if ((arquetipo.iddepartamento as number[]).some(iddepartamento => !usuarioDepartamentos.includes(iddepartamento)))
+						return "Departamento não encontrado";
+				}
+
+				if (!arquetipo.iddepartamento || !arquetipo.iddepartamento.length)
+					return "É necessário selecionar ao menos um departamento para criar o arquétipo";
+			}
 
 			try {
 				await sql.query("insert into arquetipo (nome, nomeexterno, descricaocurta, descricaocompleta, versao) values (?, ?, ?, ?, ?)", [arquetipo.nome, arquetipo.nomeexterno, arquetipo.descricaocurta, arquetipo.descricaocompleta, imagem ? 1 : 0]);
@@ -192,7 +182,7 @@ class Arquetipo {
 		});
 	}
 
-	public static async editar(arquetipo: Arquetipo, imagem?: app.UploadedFile | null): Promise<string | number> {
+	public static async editar(arquetipo: Arquetipo, idusuario: number, idperfil: Perfil, imagem?: app.UploadedFile | null): Promise<string | number> {
 		const res = Arquetipo.validar(arquetipo, false);
 		if (res)
 			return res;
@@ -208,6 +198,33 @@ class Arquetipo {
 
 		return app.sql.connect(async (sql) => {
 			try {
+				if (idperfil !== Perfil.Administrador) {
+					const usuarioDepartamentos: number[] = (await sql.query("select iddepartamento from usuario_departamento where idusuario = ?", [idusuario]) as any[]).map(d => d.iddepartamento);
+
+					if (arquetipo.iddepartamento) {
+						if ((arquetipo.iddepartamento as number[]).some(iddepartamento => !usuarioDepartamentos.includes(iddepartamento)))
+							return "Departamento não encontrado";
+					}
+
+					if (!arquetipo.iddepartamento || !arquetipo.iddepartamento.length)
+						return "É necessário selecionar ao menos um departamento para editar o arquétipo";
+
+					// Faz de conta que o usuário selecionou todos os departamentos aos quais ele não teria acesso,
+					// para que o merge não cause impacto, excluindo os departamentos que ele não tem acesso.
+					let existentes: number[] = (await sql.query(`SELECT iddepartamento FROM arquetipo_departamento WHERE idarquetipo = ?`, [arquetipo.id]) as any[]).map(d => d.iddepartamento);
+					if (existentes.length) {
+						if (!existentes.some(iddepartamento => usuarioDepartamentos.includes(iddepartamento)))
+							return "Arquétipo não encontrado";
+
+						existentes = existentes.filter(iddepartamento => !usuarioDepartamentos.includes(iddepartamento));
+						if (!arquetipo.iddepartamento)
+							arquetipo.iddepartamento = [];
+						(arquetipo.iddepartamento as number[]).push(...existentes);
+					} else {
+						return "Arquétipo não encontrado";
+					}
+				}
+
 				await sql.query("update arquetipo set nome = ?, nomeexterno = ?, descricaocurta = ?, descricaocompleta = ? where id = ?", [arquetipo.nome, arquetipo.nomeexterno, arquetipo.descricaocurta, arquetipo.descricaocompleta, arquetipo.id]);
 
 				if (!sql.affectedRows)
@@ -250,9 +267,21 @@ class Arquetipo {
 		});
 	}
 
-	public static async excluir(id: number): Promise<string | null> {
+	public static async excluir(id: number, idusuario: number, idperfil: Perfil): Promise<string | null> {
 		return app.sql.connect(async (sql) => {
 			try {
+				if (idperfil !== Perfil.Administrador) {
+					const usuarioDepartamentos: number[] = (await sql.query("select iddepartamento from usuario_departamento where idusuario = ?", [idusuario]) as any[]).map(d => d.iddepartamento);
+
+					const existentes: number[] = (await sql.query(`SELECT iddepartamento FROM arquetipo_departamento WHERE idarquetipo = ?`, [id]) as any[]).map(d => d.iddepartamento);
+					if (existentes.length) {
+						if (!existentes.some(iddepartamento => usuarioDepartamentos.includes(iddepartamento)))
+							return "Arquétipo não encontrado";
+					} else {
+						return "Arquétipo não encontrado";
+					}
+				}
+
 				await sql.query("delete from arquetipo where id = ?", [id]);
 
 				return (sql.affectedRows ? null : "Arquétipo não encontrado");
