@@ -15,7 +15,7 @@ class UsuarioRoute {
 				usuario: u,
 				item: null,
 				perfis: perfis.lista,
-				departamentos: await Departamento.listarCombo(),
+				departamentos: await Departamento.listarCombo(u.id, u.idperfil)
 			});
 	}
 
@@ -37,7 +37,7 @@ class UsuarioRoute {
 					usuario: u,
 					item: item,
 					perfis: perfis.lista,
-					departamentos: await Departamento.listarCombo(),
+					departamentos: await Departamento.listarCombo(u.id, u.idperfil)
 				});
 		}
 	}

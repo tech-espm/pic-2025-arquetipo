@@ -104,6 +104,10 @@ public static async criarOuEditar(submissao: Submissao, idquestionario: number):
 		return s;
 	}
 
+	public static async validarRespondente(email: String): Promise<boolean> {
+		return true;
+	}
+
 	public static async obterPorId(id: number): Promise<Submissao | null> {
 		let s: Submissao = null;
 
@@ -133,9 +137,6 @@ public static async criarOuEditar(submissao: Submissao, idquestionario: number):
 
 		return lista || [];
 	}
-
-
-
 }
 
 export = Submissao;

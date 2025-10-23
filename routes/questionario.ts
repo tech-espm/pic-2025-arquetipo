@@ -22,13 +22,7 @@ class QuestionarioRoute {
 		if (!u)
 			res.redirect(app.root + "/acesso");
 
-		let departamentos: Departamento[] = [];
-		if (u.admin) {
-			departamentos = await Departamento.listarCombo();
-		} else {
-			let usuario = await Usuario.obter(u.id);
-			departamentos = await Departamento.obter(usuario.iddepartamento as number[]);
-		}
+
 
 		res.render("questionario/editar", {
 			titulo: "Criar Questionário",
@@ -36,7 +30,7 @@ class QuestionarioRoute {
 			usuario: u,
 			publicosalvos: publicos.lista,
 			disponibilidades: disponibilidades.lista,
-			departamentos: departamentos,
+			departamentos: await Departamento.listarCombo(u.id, u.idperfil),
 			item: null
 		});
 	}
@@ -67,21 +61,12 @@ class QuestionarioRoute {
 			return;
 		}
 
-		let departamentos: Departamento[] = [];
-		let iddepartamento: number[] = [];
-		if (u.admin) {
-			departamentos = await Departamento.listarCombo();
-			departamentos.forEach((e) => iddepartamento.push(e.id))
-		} else {
-			let usuario = await Usuario.obter(u.id);
-			departamentos = await Departamento.obter(iddepartamento);
-		}
 
 		res.render("questionario/editar", {
 			titulo: "Editar Questionário",
 			datatables: true,
 			usuario: u,
-			departamentos: departamentos,
+			departamentos: await Departamento.listarCombo(u.id, u.idperfil),
 			publicosalvos: publicos.lista,
 			disponibilidades: disponibilidades.lista,
 			arquetipos: await Arquetipo.listarCombo(u.id, u.idperfil),

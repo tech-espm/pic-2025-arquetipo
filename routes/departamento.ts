@@ -48,7 +48,7 @@ class DepartamentoRoute {
 				datatables: true,
 				xlsx: true,
 				usuario: u,
-				lista: await Departamento.listar()
+				lista: await Departamento.listarCombo(u.id, u.idperfil)
 			});
 	}
 }

@@ -14,13 +14,7 @@ class ArquetipoRoute {
 		if (!u)
 			res.redirect(app.root + "/acesso");
 
-		let departamentos: Departamento[] = [];
-		if (u.admin) {
-			departamentos = await Departamento.listarCombo();
-		} else {
-			let usuario = await Usuario.obter(u.id);
-			departamentos = await Departamento.obter(usuario.iddepartamento as number[]);
-		}
+		let departamentos = await Departamento.listarCombo(u.id, u.idperfil);
 
 		res.render("arquetipo/editar", {
 			titulo: "Criar Arquétipo",
@@ -36,15 +30,6 @@ class ArquetipoRoute {
 		if (!u) {
 			res.redirect(app.root + "/acesso");
 			return null;
-		}
-
-		let departamentos: Departamento[] = [];
-
-		if (u.admin) {
-			departamentos = await Departamento.listarCombo();
-		} else {
-			let usuario = await Usuario.obter(u.id);
-			departamentos = await Departamento.obter(usuario.iddepartamento as number[]);
 		}
 
 		let id = parseInt(req.query["id"] as string);
@@ -66,12 +51,11 @@ class ArquetipoRoute {
 		} else {
 			res.render("arquetipo/editar", {
 				titulo: "Editar Arquétipo",
-				departamentos: departamentos,
+				departamentos: Departamento.listarCombo(u.id, u.idperfil),
 				usuario: u,
 				item: item,
 			});
 		}
-		
 	}
 
 	public static async listar(req: app.Request, res: app.Response) {

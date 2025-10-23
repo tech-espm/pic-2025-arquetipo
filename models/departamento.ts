@@ -30,17 +30,38 @@ class Departamento {
 		return null;
 	}
 
-	public static listar(): Promise<Departamento[]> {
-		return app.sql.connect(async (sql) => {
-			return (await sql.query("select id, nome from departamento")) || [];
-		});
-	}
+	public static listar(idusuario: number, idperfil: Perfil): Promise<Departamento[]> {
+        return app.sql.connect(async (sql) => {
+            if (idperfil === Perfil.Administrador) {
+                return (await sql.query("SELECT id, nome FROM departamento")) || [];
+            }
 
-	public static listarCombo(): Promise<Departamento[]> {
-		return app.sql.connect(async (sql) => {
-			return (await sql.query("select id, nome from departamento order by nome asc")) || [];
-		});
-	}
+            return (await sql.query(
+                `SELECT d.id, d.nome
+                 FROM departamento d
+                 INNER JOIN usuario_departamento ud ON d.id = ud.iddepartamento
+                 WHERE ud.idusuario = ?`,
+                [idusuario]
+            )) || [];
+        });
+    }
+
+	public static listarCombo(idusuario: number, idperfil: Perfil): Promise<Departamento[]> {
+        return app.sql.connect(async (sql) => {
+            if (idperfil === Perfil.Administrador) {
+                return (await sql.query("SELECT id, nome FROM departamento ORDER BY nome ASC")) || [];
+            }
+
+            return (await sql.query(
+                `SELECT d.id, d.nome
+                 FROM departamento d
+                 INNER JOIN usuario_departamento ud ON d.id = ud.iddepartamento
+                 WHERE ud.idusuario = ?
+                 ORDER BY d.nome ASC`,
+                [idusuario]
+            )) || [];
+        });
+    }
 
 	public static listarPorQuestionario(idquestionario: number): Promise<Departamento[]> {
 		return app.sql.connect(async (sql) => {

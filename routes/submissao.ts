@@ -19,9 +19,9 @@ class SubmissaoRoute {
 
 
 		const questionariourl = req.params["url"];
-		let item: Questionario = await Questionario.obterPorUrl(questionariourl as string);
+		let questionario: Questionario = await Questionario.obterPorUrl(questionariourl as string);
 
-		if (!item) {
+		if (!questionario) {
 			res.render("index/erro", {
 				layout: "layout-externo",
 				mensagem: "Questionário não encontrado."
@@ -29,11 +29,11 @@ class SubmissaoRoute {
 			return;
 		}
 
-		if (item.iddisponibilidade === Disponibilidade.Oculto || item.iddisponibilidade === Disponibilidade.Privado) {
+		if (questionario.iddisponibilidade === Disponibilidade.Oculto || questionario.iddisponibilidade === Disponibilidade.Privado) {
 			res.render("questionario/questionario-oculto-privado", {
 				layout: "layout-externo",
 				usuario: null,
-				oculto: item.iddisponibilidade === Disponibilidade.Oculto ? true : false
+				oculto: questionario.iddisponibilidade === Disponibilidade.Oculto ? true : false
 			});	
 			return;
 		}
@@ -44,12 +44,14 @@ class SubmissaoRoute {
 		let paraFuncionarios :boolean = false;
 		let paraAlunos : boolean = false;
 		
-		for (let index = 0; index < item.idpublicosalvos.length; index++) {
-			if (item.idpublicosalvos[index]["idpublicoalvo"] === Publico.Funcionario){
+		for (let index = 0; index < questionario.idpublicosalvos.length; index++) {
+      		let publicoalvo: Publico = questionario.idpublicosalvos[index]["idpublicoalvo"];
+
+			if (publicoalvo === Publico.Funcionario) {
 				paraFuncionarios = true;
-			}else if(item.idpublicosalvos[index]["idpublicoalvo"] === Publico.Aluno){
+			} else if (publicoalvo === Publico.Aluno) {
 				paraAlunos = true;
-			}else if(item.idpublicosalvos[index]["idpublicoalvo"] === Publico.Externo){
+			} else if (publicoalvo === Publico.Externo) {
 				paraTodos = true;
 			}
 		}
@@ -65,7 +67,7 @@ class SubmissaoRoute {
 				return;
 			}
 
-			resposta = await Submissao.obterResposta(item.id, u.email, u.id);
+			resposta = await Submissao.obterResposta(questionario.id, u.email, u.id);
 
 			paraTodos = false;
 		}else{
@@ -75,11 +77,11 @@ class SubmissaoRoute {
 			res.render("questionario/questionario", {
 				layout: "layout-externo-sem-card",
 				usuario: u,
-				item: item,
+				item: questionario,
 				paraTodos: paraTodos,
 				aluno: aluno,
 				resposta: resposta,
-				urlSite: appsettings.urlSite,
+				urlCallback: appsettings.ssoRedirBase + encodeURIComponent(appsettings.urlSite + "/teste/" + questionario.url),
 				ssoRedirBase: appsettings.ssoRedirBase,
 			})
 	}

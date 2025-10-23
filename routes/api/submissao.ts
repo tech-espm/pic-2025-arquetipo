@@ -50,29 +50,24 @@ class SubmissaoApiRoute {
 		let paraFuncionarios :boolean = false;
 		let paraAlunos : boolean = false;		
 		for (let index = 0; index < questionario.idpublicosalvos.length; index++) {
-			if (questionario.idpublicosalvos[index]["idpublicoalvo"] === Publico.Funcionario){
-				paraFuncionarios = true;
-			}else if(questionario.idpublicosalvos[index]["idpublicoalvo"] === Publico.Aluno){
-				paraAlunos = true;
-			}else if(questionario.idpublicosalvos[index]["idpublicoalvo"] === Publico.Externo){
-				paraTodos = true;
-			}
+			let publicoalvo : Publico = questionario.idpublicosalvos[index]["idpublicoalvo"];
+			if (publicoalvo === Publico.Funcionario){paraFuncionarios = true;}
+			else if(publicoalvo === Publico.Aluno){paraAlunos = true;}
+			else if(publicoalvo === Publico.Externo){paraTodos = true;}
 		}
 
 		if ((paraFuncionarios || paraAlunos) && !paraTodos){
-			// refazer lógica para autorização
-			const u = await Usuario.cookie(req, res, false, false);
-			if(!u){
-				return;
-			}
-			req.body.idusuario= u.id;
+			// Essa validação acontecerá com email, cookie, token? Pegar o token na hora que ele loga para responder e mandar junto com requisção e fazer a validação desse token aqui?
+			Submissao.validarRespondente(submissao.email);
 		}
 
 		const r = await Submissao.criarOuEditar(req.body, parseInt(req.body.idquestionario));
 		const r2 = await Arquetipo.obter(parseInt(req.body.resposta.arquetipoid));
 
-		
-		if (typeof r === "string")
+		if (typeof r === "string") 
+			res.status(400);
+
+		if (typeof r2 === "string") 
 			res.status(400);
 
 		res.json(r2);
