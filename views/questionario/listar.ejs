@@ -11,8 +11,7 @@
 		columns: [
 			{ title: "", "class": "col-min", searchable: false, orderable: false, data: "id", render: function (v, type, row) { return '<a target="_blank" title="Editar" href="<%- root %>/questionario/editar?id=' + row.id + '" class="btn btn-sm btn-outline-primary"><i class="fa fa-fw fa-edit"></i></a> <a target="_blank" title="Visualizar" href="<%- root %>/teste/' + row.url + '" class="btn btn-sm btn-outline-success"><i class="fa fa-fw fa-link"></i></a> <button title="Excluir" type="button" data-excluir="1" class="btn btn-sm btn-outline-danger"><i class="fa fa-fw fa-times "></i></button>'; } },
 			{ title: "Nome", render: encode, data: "nome" },
-			{ title: "Departamento", render: encode, data: "departamento" },
-            
+			{ title: "Departamento", "class": "obs-col quebra-linha", render: encode, data: "departamentos" },
 		],
 		data: <%- JSON.stringify(lista) %>,
 		export: { xlsx: true, title: "Questionários" }
