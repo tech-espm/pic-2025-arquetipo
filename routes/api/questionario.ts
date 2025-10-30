@@ -19,7 +19,7 @@ class QuestionarioApiRoute {
 			return;
 		}
 
-		const questionario = await Questionario.obter(id);
+		const questionario = await Questionario.obter(id, u.id, u.idperfil);
 
 		if (!questionario) {
 			res.status(404).json("Questionário não encontrado");
@@ -41,6 +41,8 @@ class QuestionarioApiRoute {
 
 		const r = await Questionario.criar(
 			req.body,
+			u.id,
+			u.idperfil,
 			req.uploadedFiles.imagemintroducao,
 			req.uploadedFiles.imagemquestionario,
 			req.uploadedFiles.imagemlogo
@@ -66,7 +68,7 @@ public static async editar(req: app.Request, res: app.Response) {
 		return;
 	}
 
-	const questionario = await Questionario.obter(id);
+	const questionario = await Questionario.obter(id, u.id, u.idperfil);
 	if (!questionario) {
 		res.status(404).json("Questionário não encontrado");
 		return;
@@ -75,6 +77,8 @@ public static async editar(req: app.Request, res: app.Response) {
 	
 	const r = await Questionario.editar(
 		req.body,
+		u.id,
+		u.idperfil,
 		req.uploadedFiles.imagemintroducao,
 		req.uploadedFiles.imagemquestionario,
 		req.uploadedFiles.imagemlogo
@@ -104,7 +108,7 @@ public static async editar(req: app.Request, res: app.Response) {
 			return;
 		}
 
-		const erro = await Questionario.excluir(id);
+		const erro = await Questionario.excluir(id, u.id, u.idperfil);
 
 		if (erro) {
 			res.status(400).json(erro);

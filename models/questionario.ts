@@ -1,35 +1,34 @@
 import app = require("teem");
+import Perfil = require("../enums/perfil");
 
 interface Questionario {
-	id: number;
-	nome: string;
-	nomeexterno: string;
-	iddisponibilidade: number;
-	anonimo: boolean;
-	url: string;
-	descricao: string;
-	corfundopagina: string;
-	corfundocard: string;
-	cordestaque: string;
-	cortextocard: string;
-	cortextodestaque: string;
-	criacao: string | null;
-	textointroducao: string | null;
-	questoes: string;
-	excluir_imagem_introducao?: number | null;
-	excluir_imagem_questionario?: number | null;
-	excluir_imagem_logo?: number | null;
+  id: number;
+  nome: string;
+  nomeexterno: string;
+  iddisponibilidade: number;
+  anonimo: boolean;
+  url: string;
+  descricao: string;
+  corfundopagina: string;
+  corfundocard: string;
+  cordestaque: string;
+  cortextocard: string;
+  cortextodestaque: string;
+  criacao: string | null;
+  textointroducao: string | null;
+  questoes: string;
+  excluir_imagem_introducao?: number | null;
+  excluir_imagem_questionario?: number | null;
+  excluir_imagem_logo?: number | null;
 
-
-	//usado apenas no obter
-	iddepartamento: number[] | string | null;
-	idpublicosalvos: number[] | string | null;
-	idarquetipos: number[] | string | null;
+  //usado apenas no obter
+  iddepartamento: number[] | string | null;
+  idpublicosalvos: number[] | string | null;
+  idarquetipos: number[] | string | null;
 }
 
-
 class Questionario {
-  private static validar(questionario: Questionario, criacao: boolean): string {
+  private static validar(questionario: Questionario, criacao: boolean, imagemintroducao?: app.UploadedFile | null, imagemquestionario?: app.UploadedFile | null, imagemlogo?: app.UploadedFile | null): string {
     if (!questionario) return "Questionário inválido";
 
     questionario.id = parseInt(questionario.id as any);
@@ -104,7 +103,18 @@ class Questionario {
       return "Cor do texto de destaque inválida";
 
     // if (!questionario.anonimo)
-    // 	return "Valor de anonimato inválido";
+    //  return "Valor de anonimato inválido";
+
+
+    if (imagemintroducao && imagemintroducao.size > 16 * 1024 * 1024)
+      return "O tamanho da imagem não pode ser maior que 16MB";
+
+    if (imagemquestionario && imagemquestionario.size > 16 * 1024 * 1024)
+      return "O tamanho da imagem não pode ser maior que 16MB";
+
+    if (imagemlogo && imagemlogo.size > 2 * 1024 * 1024)
+      return "O tamanho da imagem não pode ser maior que 2MB";
+
 
     if (
       !questionario.iddisponibilidade ||
@@ -136,27 +146,70 @@ class Questionario {
     return null;
   }
 
-  public static listar(): Promise<Questionario[]> {
+  public static listar(
+    idusuario: number,
+    idperfil: Perfil
+  ): Promise<Questionario[]> {
     return app.sql.connect(async (sql) => {
+      if (idperfil == Perfil.Administrador)
+        return (
+          (await sql.query(
+            "select q.id, q.nome, q.nomeexterno, q.iddisponibilidade, q.anonimo, q.url, q.descricao, q.criacao, (select group_concat(d.nome order by d.nome asc separator ', ') from questionario_departamento qd inner join departamento d on d.id = qd.iddepartamento where qd.idquestionario = q.id) departamentos from questionario q"
+          )) || []
+        );
+
       return (
         (await sql.query(
-          "select id, nome,nomeexterno,iddisponibilidade,anonimo,url,descricao,criacao from questionario"
+          `select tmp.id, q.nome, q.nomeexterno, q.iddisponibilidade, q.anonimo, q.url, q.descricao, q.criacao,
+           (select group_concat(d.nome order by d.nome asc separator ', ') from questionario_departamento qd inner join departamento d on d.id = qd.iddepartamento where qd.idquestionario = tmp.id) departamentos
+           from (
+             select distinct qd.idquestionario id
+             from usuario_departamento ud
+             inner join questionario_departamento qd on qd.iddepartamento = ud.iddepartamento
+             where ud.idusuario = ?
+           ) tmp
+           inner join questionario q on q.id = tmp.id
+          `,
+          [idusuario]
         )) || []
       );
     });
   }
 
-  public static listarCombo(): Promise<Questionario[]> {
+  public static listarCombo(
+    idusuario: number,
+    idperfil: Perfil
+  ): Promise<Questionario[]> {
     return app.sql.connect(async (sql) => {
+      if (idperfil == Perfil.Administrador)
+        return (
+          (await sql.query(
+            "select id, nome from questionario order by nome asc"
+          )) || []
+        );
+
       return (
         (await sql.query(
-          "select id, nome,nomeexterno,iddisponibilidade,anonimo,url,descricao,criacao from questionario order by nome asc"
+          `select tmp.id, q.nome from (
+            select distinct qd.idquestionario id
+            from usuario_departamento ud
+            inner join questionario_departamento qd on qd.iddepartamento = ud.iddepartamento
+            where ud.idusuario = ?
+          ) tmp
+          inner join questionario q on q.id = tmp.id
+          order by q.nome asc
+          `,
+          [idusuario]
         )) || []
       );
     });
   }
 
-  public static obter(id: number): Promise<Questionario> {
+  public static obter(
+    id: number,
+    idusuario: number,
+    idperfil: Perfil
+  ): Promise<Questionario> {
     return app.sql.connect(async (sql) => {
       const lista: Questionario[] = await sql.query(
         "select id, nome,nomeexterno,iddisponibilidade,anonimo,url,descricao,textointroducao,corfundopagina,corfundocard,cordestaque,cortextocard,cortextodestaque, questoes,versaointroducao, versaoquestionario, versaologo from questionario where id = ?",
@@ -167,22 +220,47 @@ class Questionario {
 
       const questionario = lista[0];
 
-      questionario.iddepartamento = await sql.query(
-        "select iddepartamento from questionario_departamento where idquestionario = ?",
-        [id]
-      );
+      questionario.iddepartamento = (
+        (await sql.query(
+          "select iddepartamento from questionario_departamento where idquestionario = ?",
+          [id]
+        )) as any[]
+      ).map((d) => d.iddepartamento);
 
-      questionario.idpublicosalvos = await sql.query(
-        "select idpublicoalvo from questionario_publicoalvo where idquestionario = ?",
-        [id]
-      );
+      questionario.idpublicosalvos = (
+        (await sql.query(
+          "select idpublicoalvo from questionario_publicoalvo where idquestionario = ?",
+          [id]
+        )) as any[]
+      ).map((d) => d.idpublicoalvo);
 
-      questionario.idarquetipos = await sql.query(
-        "select idarquetipo from questionario_arquetipo where idquestionario = ?",
-        [id]
-      );
+      questionario.idarquetipos = (
+        (await sql.query(
+          "select idarquetipo from questionario_arquetipo where idquestionario = ?",
+          [id]
+        )) as any[]
+      ).map((d) => d.idarquetipo);
 
-      return questionario;
+      if (idperfil === Perfil.Administrador) {
+        return questionario;
+      } else {
+        const usuarioDepartamentos: number[] = (
+          (await sql.query(
+            "select iddepartamento from usuario_departamento where idusuario = ?",
+            [idusuario]
+          )) as any[]
+        ).map((d) => d.iddepartamento);
+
+        //PERGUNTAR deveria retornar apenas departamentos que o usuário tem acesso?
+        if (
+          usuarioDepartamentos.some((iddepartamento) =>
+            (questionario.iddepartamento as number[]).includes(iddepartamento)
+          )
+        )
+          return questionario;
+      }
+
+      return null;
     });
   }
 
@@ -197,20 +275,26 @@ class Questionario {
 
       const questionario = lista[0];
 
-      questionario.iddepartamento = await sql.query(
-        "select iddepartamento from questionario_departamento where idquestionario = ?",
-        [questionario.id]
-      );
+      questionario.iddepartamento = (
+        (await sql.query(
+          "select iddepartamento from questionario_departamento where idquestionario = ?",
+          [questionario.id]
+        )) as any[]
+      ).map((d) => d.iddepartamento);
 
-      questionario.idpublicosalvos = await sql.query(
-        "select idpublicoalvo from questionario_publicoalvo where idquestionario = ?",
-        [questionario.id]
-      );
+      questionario.idpublicosalvos = (
+        (await sql.query(
+          "select idpublicoalvo from questionario_publicoalvo where idquestionario = ?",
+          [questionario.id]
+        )) as any[]
+      ).map((d) => d.idpublicoalvo);
 
-      questionario.idarquetipos = await sql.query(
-        "select idarquetipo from questionario_arquetipo where idquestionario = ?",
-        [questionario.id]
-      );
+      questionario.idarquetipos = (
+        (await sql.query(
+          "select idarquetipo from questionario_arquetipo where idquestionario = ?",
+          [questionario.id]
+        )) as any[]
+      ).map((d) => d.idarquetipo);
 
       return questionario;
     });
@@ -303,9 +387,7 @@ class Questionario {
 
     if (!publicosalvos) publicosalvos = [];
 
-    const existentesPublicos: { id: number; idpublicoalvo: number }[] =
-      await sql.query(
-        `SELECT id, idpublicoalvo FROM questionario_publicoalvo WHERE idquestionario = ?`,
+    const existentesPublicos: { id: number; idpublicoalvo: number }[] = await sql.query(`SELECT id, idpublicoalvo FROM questionario_publicoalvo WHERE idquestionario = ?`,
         [id]
       );
     const toRemovePublicos = existentesPublicos.filter(
@@ -343,24 +425,36 @@ class Questionario {
 
   public static async criar(
     questionario: Questionario,
+    idusuario: number,
+    idperfil: Perfil,
     imagemintroducao?: app.UploadedFile | null,
     imagemquestionario?: app.UploadedFile | null,
     imagemlogo?: app.UploadedFile | null
   ): Promise<string | number> {
-    const res = Questionario.validar(questionario, true);
+    const res = Questionario.validar(
+      questionario,
+      true,
+      imagemintroducao,
+      imagemquestionario,
+      imagemlogo
+    );
     if (res) return res;
-
-    if (imagemintroducao && imagemintroducao.size > 16 * 1024 * 1024)
-      return "O tamanho da imagem não pode ser maior que 16MB";
-
-    if (imagemquestionario && imagemquestionario.size > 16 * 1024 * 1024)
-      return "O tamanho da imagem não pode ser maior que 16MB";
-
-    if (imagemlogo && imagemlogo.size > 2 * 1024 * 1024)
-      return "O tamanho da imagem não pode ser maior que 2MB";
 
     return app.sql.connect(async (sql) => {
       await sql.beginTransaction();
+
+      if (idperfil !== Perfil.Administrador) {
+        if (questionario.iddepartamento) {
+          const usuarioDepartamentos: number[] = ((await sql.query("select iddepartamento from usuario_departamento where idusuario = ?",[idusuario])) as any[]).map((d) => d.iddepartamento);
+
+          if ((questionario.iddepartamento as number[]).some((iddepartamento) => !usuarioDepartamentos.includes(iddepartamento)))
+            return "Departamento não encontrado";
+        }
+
+        if (!questionario.iddepartamento || !questionario.iddepartamento.length)
+          return "É necessário selecionar ao menos um departamento para criar o questionário";
+
+      }
 
       try {
         await sql.query(
@@ -436,22 +530,22 @@ class Questionario {
     });
   }
 
-  // Substitua o seu método editar() por este:
   public static async editar(
     questionario: Questionario,
+    idusuario: number,
+    idperfil: Perfil,
     imagemintroducao?: app.UploadedFile | null,
     imagemquestionario?: app.UploadedFile | null,
     imagemlogo?: app.UploadedFile | null
   ): Promise<string | number> {
-    const res = Questionario.validar(questionario, false);
+    const res = Questionario.validar(
+      questionario,
+      false,
+      imagemintroducao,
+      imagemquestionario,
+      imagemlogo
+    );
     if (res) return res;
-
-    if (imagemintroducao && imagemintroducao.size > 16 * 1024 * 1024)
-      return "A imagem de introdução não pode ter mais que 16MB";
-    if (imagemquestionario && imagemquestionario.size > 16 * 1024 * 1024)
-      return "A imagem do questionário não pode ter mais que 16MB";
-    if (imagemlogo && imagemlogo.size > 2 * 1024 * 1024)
-      return "A imagem da logo não pode ter mais que 2MB";
 
     questionario.excluir_imagem_introducao = parseInt(
       questionario.excluir_imagem_introducao as any
@@ -471,25 +565,72 @@ class Questionario {
 
     return app.sql.connect(async (sql) => {
       await sql.beginTransaction();
+
+      if (idperfil !== Perfil.Administrador) {
+        const usuarioDepartamentos: number[] = (
+          (await sql.query(
+            "select iddepartamento from usuario_departamento where idusuario = ?",
+            [idusuario]
+          )) as any[]
+        ).map((d) => d.iddepartamento);
+
+        if (questionario.iddepartamento) {
+          if (
+            (questionario.iddepartamento as number[]).some(
+              (iddepartamento) => !usuarioDepartamentos.includes(iddepartamento)
+            )
+          )
+            return "Departamento não encontrado";
+        }
+
+        if (!questionario.iddepartamento || !questionario.iddepartamento.length)
+          return "É necessário selecionar ao menos um departamento para editar o questionário";
+
+        // Faz de conta que o usuário selecionou todos os departamentos aos quais ele não teria acesso,
+        // para que o merge não cause impacto, excluindo os departamentos que ele não tem acesso.
+        let existentes: number[] = (
+          (await sql.query(
+            `SELECT iddepartamento FROM questionario_departamento WHERE idquestionario = ?`,
+            [questionario.id]
+          )) as any[]
+        ).map((d) => d.iddepartamento);
+        if (existentes.length) {
+          if (
+            !existentes.some((iddepartamento) =>
+              usuarioDepartamentos.includes(iddepartamento)
+            )
+          )
+            return "Questionário não encontrado";
+
+          existentes = existentes.filter(
+            (iddepartamento) => !usuarioDepartamentos.includes(iddepartamento)
+          );
+          if (!questionario.iddepartamento) questionario.iddepartamento = [];
+          (questionario.iddepartamento as number[]).push(...existentes);
+        } else {
+          return "Questionário não encontrado";
+        }
+      }
+
       try {
         await sql.query(
           `
-				update questionario set
-					nome = ?,
-					nomeexterno = ?,
-					descricao = ?,
-					url = ?,
-					textointroducao = ?,
-					anonimo = ?,
-					iddisponibilidade = ?,
-					corfundopagina = ?,
-					corfundocard = ?,
-					cortextocard = ?,
-					cordestaque = ?,
-					cortextodestaque = ?,
-					questoes = ?
-				where id = ?
-			`,
+        update questionario set
+          nome = ?,
+          nomeexterno = ?,
+          descricao = ?,
+          url = ?,
+          textointroducao = ?,
+          anonimo = ?,
+          iddisponibilidade = ?,
+          corfundopagina = ?,
+          corfundocard = ?,
+          cortextocard = ?,
+          cordestaque = ?,
+          cortextodestaque = ?,
+          questoes = ?
+        where id = ?
+      `,
           [
             questionario.nome,
             questionario.nomeexterno,
@@ -563,7 +704,6 @@ class Questionario {
     });
   }
 
-  // Substitua o seu método atualizarImagem() por este:
   private static async atualizarImagem(
     sql: app.Sql,
     campo: string,
@@ -604,8 +744,38 @@ class Questionario {
     }
   }
 
-  public static async excluir(id: number): Promise<string | null> {
+  public static async excluir(
+    id: number,
+    idusuario: number,
+    idperfil: Perfil
+  ): Promise<string | null> {
     return app.sql.connect(async (sql) => {
+      if (idperfil !== Perfil.Administrador) {
+        const usuarioDepartamentos: number[] = (
+          (await sql.query(
+            "select iddepartamento from usuario_departamento where idusuario = ?",
+            [idusuario]
+          )) as any[]
+        ).map((d) => d.iddepartamento);
+
+        const existentes: number[] = (
+          (await sql.query(
+            `SELECT iddepartamento FROM questionario_departamento WHERE idquestionario = ?`,
+            [id]
+          )) as any[]
+        ).map((d) => d.iddepartamento);
+        if (existentes.length) {
+          if (
+            !existentes.some((iddepartamento) =>
+              usuarioDepartamentos.includes(iddepartamento)
+            )
+          )
+            return "Questionário não encontrado";
+        } else {
+          return "Questionário não encontrado";
+        }
+      }
+
       try {
         await sql.query("delete from questionario where id = ?", [id]);
 
@@ -628,65 +798,3 @@ class Questionario {
 }
 
 export = Questionario;
-
-
-
-
-
-	// public static async editar(arquetipo: Arquetipo, imagem?: app.UploadedFile | null): Promise<string | number> {
-	// 	const res = Arquetipo.validar(arquetipo, false);
-	// 	if (res)
-	// 		return res;
-
-	// 	if (imagem) {
-	// 		arquetipo.excluir_imagem_atual = 0;
-
-	// 		if (imagem.size > 2048 * 2048)
-	// 			return "O tamanho da imagem não pode ser maior que 1MB";
-	// 	} else if (parseInt(arquetipo.excluir_imagem_atual as any)) {
-	// 		arquetipo.excluir_imagem_atual = 1;
-	// 	}
-
-	// 	return app.sql.connect(async (sql) => {
-	// 		try {
-	// 			await sql.query("update arquetipo set nome = ?, nomeexterno = ?, descricaocurta = ?, descricaocompleta = ? where id = ?", [arquetipo.nome, arquetipo.nomeexterno, arquetipo.descricaocurta, arquetipo.descricaocompleta, arquetipo.id]);
-
-	// 			if (!sql.affectedRows)
-	// 				return "Arquétipo não encontrado";
-
-	// 			await Arquetipo.merge(sql, arquetipo.id, arquetipo.iddepartamento as number[]);
-
-	// 			let versao: number = await sql.scalar("select versao from arquetipo where id = ?", [arquetipo.id]);
-
-	// 			const caminhoImagem = "public/img/arquetipo/" + arquetipo.id + ".jpg";
-	// 			if (arquetipo.excluir_imagem_atual) {
-	// 				versao = -(Math.abs(versao) + 1);
-	// 				await sql.query("update arquetipo set versao = ? where id = ?", [versao, arquetipo.id]);
-
-	// 				if ((await app.fileSystem.exists(caminhoImagem)))
-	// 					await app.fileSystem.deleteFile(caminhoImagem);
-	// 			} else if (imagem) {
-	// 				versao = Math.abs(versao) + 1;
-	// 				await sql.query("update arquetipo set versao = ? where id = ?", [versao, arquetipo.id]);
-
-	// 				await app.fileSystem.saveUploadedFile(caminhoImagem, imagem);
-	// 			}
-
-	// 			await sql.commit();
-
-	// 			return versao;
-	// 		} catch (e) {
-	// 			if (e.code === "ER_DUP_ENTRY" && typeof e.message === "string") {
-	// 				if (e.message.includes("nomeexterno")) {
-	// 					return `O nome externo ${arquetipo.nomeexterno} já está em uso`;
-	// 				}
-	// 				if (e.message.includes("nome")) {
-	// 					return `O nome ${arquetipo.nome} já está em uso`;
-	// 				}
-	// 				return "Já existe um registro com dados duplicados";
-	// 			}
-	// 			throw e;
-	// 		}
-
-	// 	});
-	// }

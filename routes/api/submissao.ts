@@ -40,7 +40,7 @@ class SubmissaoApiRoute {
 			return;
 		}
 
-		const questionario = await Questionario.obter(submissao.idquestionario);
+		const questionario = await Questionario.obter(submissao.idquestionario, 0, Perfil.Administrador);
 
 		if (!questionario){
 			res.json("Questionário nulo").status(400);
