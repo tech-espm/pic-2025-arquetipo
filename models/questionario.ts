@@ -1,5 +1,6 @@
 import app = require("teem");
 import Perfil = require("../enums/perfil");
+import Departamento = require("./departamento");
 
 interface Questionario {
 	id: number;
@@ -345,7 +346,9 @@ class Questionario {
 
 				questionario.id = (await sql.scalar("select last_insert_id()")) as number;
 
-				await Questionario.merge(sql, questionario.id, questionario.idarquetipos as number[], questionario.idpublicosalvos as number[], questionario.iddepartamento as number[]);
+				await Questionario.merge(sql, questionario.id, [], questionario.idpublicosalvos as number[], questionario.iddepartamento as number[]);
+
+				// Não precisa validar os departamentos aqui, porque o questionário ainda não possui arquétipos associados.
 
 				if (imagemintroducao)
 					await app.fileSystem.saveUploadedFile(
@@ -471,6 +474,15 @@ class Questionario {
 					questionario.idpublicosalvos as number[],
 					questionario.iddepartamento as number[]
 				);
+
+				const iddepartamentoQuestionario = (await sql.query("SELECT iddepartamento FROM questionario_departamento WHERE idquestionario = ?", [questionario.id]) as any[]).map(d => d.iddepartamento);
+				const idarquetipoQuestionario = (await sql.query("SELECT idarquetipo FROM questionario_arquetipo WHERE idquestionario = ?", [questionario.id]) as any[]).map(d => d.idarquetipo);
+
+				for (let i = idarquetipoQuestionario.length - 1; i >= 0; i--) {
+					const erroValidacaoDepartamentos = await Departamento.validarDepartamentos(sql, idarquetipoQuestionario[i], null, questionario.id, iddepartamentoQuestionario);
+					if (erroValidacaoDepartamentos)
+						return erroValidacaoDepartamentos;
+				}
 
 				// Correção Arquitetural: Chamando o método refatorado "atualizarImagem"
 				// uma vez por campo, sem o array redundante.

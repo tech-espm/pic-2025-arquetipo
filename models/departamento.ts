@@ -164,6 +164,41 @@ class Departamento {
 			}
 		});
 	}
+
+	public static async validarDepartamentos(sql: app.Sql, idarquetipo: number, iddepartamentoArquetipo: number[] | null, idquestionario: number, iddepartamentoQuestionario: number[] | null): Promise<string | null> {
+		// Toda vez que editar um questionário ou arquétipo, é necessário comparar o conjunto de departamentos do questionário
+		// com o conjunto de departamentos do arquétipo, para garantir que o conjunto de departamentos do arquétipo seja um
+		// superconjunto do conjunto de departamentos do questionário.
+
+		if (!iddepartamentoArquetipo)
+			iddepartamentoArquetipo = (await sql.query("SELECT iddepartamento FROM arquetipo_departamento WHERE idarquetipo = ?", [idarquetipo]) as any[]).map(d => d.iddepartamento);
+
+		if (!iddepartamentoQuestionario)
+			iddepartamentoQuestionario = (await sql.query("SELECT iddepartamento FROM questionario_departamento WHERE idquestionario = ?", [idquestionario]) as any[]).map(d => d.iddepartamento);
+
+		const nomeArquetipo: string | null = await sql.scalar("SELECT nome FROM arquetipo WHERE id = ?", [idarquetipo]);
+		if (!nomeArquetipo)
+			return "Arquétipo não encontrado";
+
+		const nomeQuestionario: string | null = await sql.scalar("SELECT nome FROM questionario WHERE id = ?", [idquestionario]);
+		if (!nomeQuestionario)
+			return "Questionário não encontrado";
+
+		if (iddepartamentoArquetipo.length < iddepartamentoQuestionario.length)
+			return `O conjunto de departamentos do arquétipo ${nomeArquetipo} não é um superconjunto do conjunto de departamentos do questionário ${nomeQuestionario}`;
+
+		for (let i = iddepartamentoQuestionario.length - 1; i >= 0; i--) {
+			const iddepartamento = iddepartamentoQuestionario[i];
+			if (!iddepartamentoArquetipo.includes(iddepartamento)) {
+				const nomeDepartamento: string | null = await sql.scalar("SELECT nome FROM departamento WHERE id = ?", [iddepartamento]);
+				if (!nomeDepartamento)
+					return "Departamento não encontrado";
+				return `O departamento ${nomeDepartamento} faz parte do questionário ${nomeQuestionario}, mas não faz parte do arquétipo ${nomeArquetipo}`;
+			}
+		}
+
+		return null;
+	}
 }
 
 export = Departamento;

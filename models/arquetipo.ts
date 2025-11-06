@@ -1,5 +1,6 @@
 ﻿import app = require("teem");
 import Perfil = require("../enums/perfil");
+import Departamento = require("./departamento");
 
 interface Arquetipo {
 	id: number;
@@ -70,7 +71,7 @@ class Arquetipo {
 		});
 	}
 
-	public static listarCombo(idusuario: number, idperfil: Perfil): Promise<Arquetipo[]> {
+	public static listarComboPorUsuario(idusuario: number, idperfil: Perfil): Promise<Arquetipo[]> {
 		return app.sql.connect(async (sql) => {
 			if (idperfil == Perfil.Administrador)
 				return (await sql.query("select id, nome from arquetipo order by nome asc")) || [];
@@ -84,6 +85,12 @@ class Arquetipo {
 			inner join arquetipo a on a.id = tmp.id
 			order by a.nome asc
 			`, [idusuario])) || [];
+		});
+	}
+
+	public static listarComboPorQuestionario(idquestionario: number): Promise<Arquetipo[]> {
+		return app.sql.connect(async (sql) => {
+			return (await sql.query("select a.id, a.nome from arquetipo a inner join questionario_arquetipo q on q.idarquetipo = a.id where q.idquestionario = ? order by a.nome asc", [idquestionario]) as Arquetipo[]) || [];
 		});
 	}
 
@@ -161,6 +168,8 @@ class Arquetipo {
 
 				await Arquetipo.merge(sql, arquetipo.id, arquetipo.iddepartamento as number[]);
 
+				// Não precisa validar os departamentos aqui, porque o arquétipo ainda não foi associado a nenhum questionário.
+
 				if (imagem)
 					await app.fileSystem.saveUploadedFile("public/img/arquetipo/" + arquetipo.id + ".jpg", imagem);
 
@@ -231,6 +240,15 @@ class Arquetipo {
 					return "Arquétipo não encontrado";
 
 				await Arquetipo.merge(sql, arquetipo.id, arquetipo.iddepartamento as number[]);
+
+				const iddepartamentoArquetipo = (await sql.query("SELECT iddepartamento FROM arquetipo_departamento WHERE idarquetipo = ?", [arquetipo.id]) as any[]).map(d => d.iddepartamento);
+				const idquestionarioArquetipo = (await sql.query("SELECT idquestionario FROM questionario_arquetipo WHERE idarquetipo = ?", [arquetipo.id]) as any[]).map(d => d.idquestionario);
+
+				for (let i = idquestionarioArquetipo.length - 1; i >= 0; i--) {
+					const erroValidacaoDepartamentos = await Departamento.validarDepartamentos(sql, arquetipo.id, iddepartamentoArquetipo, idquestionarioArquetipo[i], null);
+					if (erroValidacaoDepartamentos)
+						return erroValidacaoDepartamentos;
+				}
 
 				let versao: number = await sql.scalar("select versao from arquetipo where id = ?", [arquetipo.id]);
 

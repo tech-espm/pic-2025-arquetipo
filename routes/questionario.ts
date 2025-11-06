@@ -50,7 +50,8 @@ class QuestionarioRoute {
 			return;
 		}
 
-// o usuário não deveria poder todos os arquetipos e departamentos nesse caso??
+		// Deve exibir todos os arquétipos dos departamentos do questionário, independente
+		// dos departamentos que o usuário tem acesso.
 		res.render("questionario/editar", {
 			titulo: "Editar Questionário",
 			datatables: true,
@@ -58,7 +59,7 @@ class QuestionarioRoute {
 			departamentos: await Departamento.listarCombo(u.id, u.idperfil),
 			publicosalvos: publicos.lista,
 			disponibilidades: disponibilidades.lista,
-			arquetipos: await Arquetipo.listarCombo(0, Perfil.Administrador),
+			arquetipos: await Arquetipo.listarComboPorQuestionario(item.id),
 			item: item
 		});
 
