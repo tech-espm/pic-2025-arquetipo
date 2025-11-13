@@ -90,7 +90,7 @@ class Arquetipo {
 
 	public static listarComboPorQuestionario(idquestionario: number): Promise<Arquetipo[]> {
 		return app.sql.connect(async (sql) => {
-			return (await sql.query("select a.id, a.nome from arquetipo a inner join questionario_arquetipo q on q.idarquetipo = a.id where q.idquestionario = ? order by a.nome asc", [idquestionario]) as Arquetipo[]) || [];
+			return (await sql.query("select distinct a.id, a.nome from questionario_departamento qd inner join arquetipo_departamento ad on ad.iddepartamento = qd.iddepartamento inner join arquetipo a on a.id = ad.idarquetipo where qd.idquestionario = ? order by a.nome asc", [idquestionario]) as Arquetipo[]) || [];
 		});
 	}
 

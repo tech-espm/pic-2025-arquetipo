@@ -1,6 +1,8 @@
 <input type="hidden" id="id" name="id" value="<%=(item ? item.id : 0) %>" />
 <input type="hidden" id="hiddentextointroducao" name="textointroducao" value="" />
-<input type="hidden" id="questoes" name="questoes" value="<%=(item ? JSON.stringify(item.questoes) : "") %>" />
+<input type="hidden" id="questoes" name="questoes" value="" />
+
+<h2 class="mt-0 mb-5 text-primary text-center"><i class="fa fa-edit"></i> Informações Gerais</h2>
 
 <div class="row">
     <div class="col-md-4">
@@ -92,7 +94,7 @@
 
 
 <div class="row">
-    <div class="col-12 mb-4">
+    <div class="col-12">
         <div class="form-group">
             <label for="descricao">Descrição</label>
             <input id="descricao" name="descricao" maxlength="255" class="form-control" type="text" spellcheck="false"
@@ -102,7 +104,7 @@
 </div>
 
 <div class="row">
-    <div class="col-12 mb-4">
+    <div class="col-12">
         <div class="form-group">
             <label for="textointroducao">Texto da introdução</label>
             <div id="textointroducao" class="d-none"><%- (item ? item.textointroducao : '' ) %></div>
@@ -110,55 +112,61 @@
     </div>
 </div>
 
-<div class="row">
-    <div class="col-12 text-center mb-3">
-        <h5>Aparência do Questionário</h5>
-    </div>
-</div>
+<hr class="my-5" />
 
-<div class="row">
-    <div class="col">
+<h2 class="mt-0 mb-5 text-primary text-center"><i class="fa fa-palette"></i> Cores</h2>
+
+<div class="row justify-content-center">
+    <div class="col-sm-6 col-md-4 col-lg-3">
         <div class="form-group">
-            <label for="corfundopagina">Cor do fundo da página</label>
+            <label for="corfundopagina">Fundo da Página</label>
             <input id="corfundopagina" name="corfundopagina" class="form-control" type="color" spellcheck="false"
                 value="<%=(item ? item.corfundopagina : '') %>" />
         </div>
     </div>
 
-    <div class="col">
+    <div class="col-sm-6 col-md-4 col-lg-3">
         <div class="form-group">
-            <label for="corfundocard">Cor do fundo do card</label>
+            <label for="corfundocard">Fundo do Card</label>
             <input id="corfundocard" name="corfundocard" class="form-control" type="color" spellcheck="false"
                 value="<%=(item ? item.corfundocard : '') %>" />
         </div>
     </div>
+</div>
 
-    <div class="col">
+<div class="row justify-content-center">
+    <div class="col-sm-6 col-md-4 col-lg-3">
         <div class="form-group">
-            <label for="cortextocard">Cor do texto do card</label>
+            <label for="cortextocard">Texto do Card</label>
             <input id="cortextocard" name="cortextocard" class="form-control" type="color" spellcheck="false"
                 value="<%=(item ? item.cortextocard : '') %>" />
         </div>
     </div>
 
-    <div class="col">
+    <div class="col-sm-6 col-md-4 col-lg-3">
         <div class="form-group">
-            <label for="cordestaque">Cor de destaque</label>
+            <label for="cordestaque">Destaque</label>
             <input id="cordestaque" name="cordestaque" class="form-control" type="color" spellcheck="false"
                 value="<%=(item ? item.cordestaque : '') %>" />
         </div>
     </div>
+</div>
 
-    <div class="col">
+<div class="row justify-content-center">
+    <div class="col-sm-6 col-md-4 col-lg-3">
         <div class="form-group">
-            <label for="cortextodestaque">Cor do texto do destaque</label>
+            <label for="cortextodestaque">Texto de Destaque</label>
             <input id="cortextodestaque" name="cortextodestaque" class="form-control" type="color" spellcheck="false"
                 value="<%=(item ? item.cortextodestaque : '') %>" />
         </div>
     </div>
 </div>
 
-<div class="row">
+<hr class="my-5" />
+
+<h2 class="mt-0 mb-5 text-primary text-center"><i class="fa fa-image"></i> Imagens</h2>
+
+<div class="row mb-5">
     <div class="col-md-6">
         <div class="form-group">
             <label for="imagemintroducao">Imagem da Introdução</label>
@@ -188,7 +196,7 @@
     </div>
 </div>
 
-<div class="row">
+<div class="row mb-5">
     <div class="col-md-6">
         <div class="form-group">
             <label for="imagemquestionario">Imagem do Questionário</label>
@@ -218,7 +226,7 @@
     </div>
 </div>
 
-<div class="row">
+<div class="row mb-5">
     <div class="col-md-6">
         <div class="form-group">
             <label for="imagemlogo">Imagem da Logo</label>
@@ -247,15 +255,16 @@
     </div>
 </div>
 
-
-
 <% if (item) { %>
-    <div class="row">
 
-        <div class="col-12">
+	<hr class="my-5" />
+
+	<h2 class="mt-0 mb-5 text-primary text-center"><i class="fa fa-theater-masks"></i> Arquétipos</h2>
+	
+    <div class="row justify-content-center">
+        <div class="col-sm-6 col-md-4 col-lg-3">
             <div class="form-group">
                 <input type="hidden" id="idarquetipos" name="idarquetipos" />
-                <label for="iddarquetiposselect">Arquétipo</label>
                 <select id="iddarquetiposselect" class="form-control" size="1">
                     <% for (let i=0; i < arquetipos.length; i++) { %>
                         <option value="<%= arquetipos[i].id %>">
@@ -267,28 +276,19 @@
         </div>
     </div>
 
-    <% if (item.questoes) { %>
-    <div class="row">
-        <div class="col-12 text-center mt-5 mb-3">
-            <h4>Questões</h4>
-        </div>
-    </div>
-    <div class="row">
+	<hr class="my-5" />
 
-        <div class="col-12">
-            
-            <table class="table table-flush table-striped table-hover" id="tabela"></table>
-        </div>
-        
-    </div>
+	<h2 class="mt-0 mb-5 text-primary text-center"><i class="fa fa-list"></i> Questões</h2>
 
-    <% } %>
+    <div class="mx-ncard">
+		<table class="table table-flush table-striped table-hover" id="tabela"></table>
+	</div>
 
     <div class="row">
         <div class="col-12 text-center">
-            <a class="btn btn-primary"  id="btnAdicionarQuestao">
-                Adicionar questão
-            </a>
+            <button type="button" class="btn btn-primary" onclick="questao = null; criarModal();">
+                <i class="fa fa-plus"></i> Adicionar Questão
+            </button>
         </div>
     </div>
         
@@ -300,361 +300,346 @@
 <link rel="stylesheet" type="text/css" href="<%- staticRoot %>/css/ckeditor.css" />
 <script type="text/javascript" src="<%- staticRoot %>/lib/ckeditor/ckeditor.js"></script>
 
-    <script type="text/javascript">
-        //<![CDATA[
-        "use strict";
+<script type="text/javascript">
+	//<![CDATA[
+	"use strict";
 
-        document.getElementById("urlbase").innerText = location.protocol + '//' + location.hostname + "/teste/";
+	document.getElementById("urlbase").innerText = location.protocol + '//' + location.hostname + "/teste/";
 
-        
-        CKEDITOR.replace("textointroducao");
-        
-        prepareMultiselect("#iddepartamentoselect", { title: "Departamento", label: "Departamento" });
-        prepareMultiselect("#idpublicoalvoselect", { title: "Público-alvo", label: "Público-alvo" });
+	CKEDITOR.replace("textointroducao");
 
+	prepareMultiselect("#iddepartamentoselect", { title: "Departamento", label: "Departamento" });
+	prepareMultiselect("#idpublicoalvoselect", { title: "Público-alvo", label: "Público-alvo" });
 
-        //<% if (item) { %>
+	//<% if (item) { %>
 
-        setMultiselectSelection("#iddepartamentoselect", [<%- item.iddepartamento.join(",") %>]);
-        setMultiselectSelection("#idpublicoalvoselect", [<%- item.idpublicosalvos.join(",") %>]);
-        
-        prepareMultiselect("#iddarquetiposselect", { title: "Arquétipo", label: "Arquétipo" });
-        setMultiselectSelection("#iddarquetiposselect", [<%- item.idarquetipos.join(",") %>]);
-        
+	setMultiselectSelection("#iddepartamentoselect", [<%- item.iddepartamento.join(",") %>]);
+	setMultiselectSelection("#idpublicoalvoselect", [<%- item.idpublicosalvos.join(",") %>]);
+	
+	prepareMultiselect("#iddarquetiposselect", { title: "Arquétipos", label: "Arquétipos" });
+	setMultiselectSelection("#iddarquetiposselect", [<%- item.idarquetipos.join(",") %>]);
+	
+	const arquetipos = [<%- arquetipos.map(d => JSON.stringify({id:d.id, nome:d.nome})).join(",") %>];
+	const departamentos = [<%- departamentos.map(d => JSON.stringify([d.id])).join(",") %>];
 
-        const arquetipos = [<%- arquetipos.map(d => JSON.stringify({id:d.id, nome:d.nome})).join(",") %>];
-        const departamentos = [<%- departamentos.map(d => JSON.stringify([d.id])).join(",") %>];
+	let arquetiposSelecionados;
+	let arquetiposFiltrados;
+	let optionsArquetipos;
+	let tabela = null;
+	let trClicada = null;
+	let questao = null;
 
+	function criarModal() {
+		const modalAntigo = document.getElementById("meuModal");
+		if (modalAntigo) modalAntigo.remove();
 
-        document.getElementById("btnAdicionarQuestao").addEventListener("click", function () {
-            criarModal();
-        });
-        
-        let arquetiposSelecionados;
-        let arquetiposFiltrados;
-        let optionsArquetipos;
-        function criarModal(questaoId){
+		//sincronizar os arquetipos selecionados com as opções do modal
+		arquetiposSelecionados = getMultiselectSelection("#iddarquetiposselect");
+		arquetiposFiltrados = arquetipos.filter(a => arquetiposSelecionados.includes(a.id.toString()));
+		optionsArquetipos = arquetiposFiltrados.map(a => `<option value="${a.id}">${a.nome}</option>`).join("");
 
-            const modalAntigo = document.getElementById("meuModal");
-            if (modalAntigo) modalAntigo.remove();
+		const modalHTML = `
+		<div class="modal fade" id="meuModal" tabindex="-1" role="dialog" aria-labelledby="meuModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+			<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="meuModalLabel">${(questao ? 'Editar' : 'Adicionar')} Questão</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+				<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="form-group">
+				<label for="titulo">Título</label>
+				<input type="text" class="form-control" id="titulo" placeholder="Digite o título">
+				</div>
+				<div class="form-group">
+				<label for="enunciado">Enunciado</label>
+				<textarea class="form-control" id="enunciado" rows="5" placeholder="Digite o enunciado"></textarea>
+				</div>
+				<hr class="my-5" />
+				<h2 class="mt-0 mb-5 text-primary text-center"><i class="fa fa-list-ol"></i> Alternativas</h2>
+				<div class="list-group" id="listaAlternativas"></div>
+				<button type="button" class="btn btn-dark mt-3" onclick="adicionarAlternativa()" id="btn-alternativa">
+					<i class="fa fa-plus"></i> Adicionar Alternativa
+				</button>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary" onclick="salvarQuestao()">OK</button>
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+			</div>
+			</div>
+		</div>
+		</div>`;
 
-            //sincronizar os arquetipos selecionados com as opções do modal
-            arquetiposSelecionados = getMultiselectSelection("#iddarquetiposselect");
-            arquetiposFiltrados = arquetipos.filter(a => arquetiposSelecionados.includes(a.id.toString()));
-            optionsArquetipos = arquetiposFiltrados.map(a => `<option value="${a.id}">${a.nome}</option>`).join("");
+		document.body.insertAdjacentHTML("beforeend", modalHTML);
 
-            const modalHTML = `
-            <div class="modal fade" id="meuModal" tabindex="-1" role="dialog" aria-labelledby="meuModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-                <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="meuModalLabel">Adicionar questão</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
-                    <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                    <label for="titulo">Título</label>
-                    <input type="text" class="form-control" id="titulo" placeholder="Digite o título">
-                    </div>
-                    <div class="form-group">
-                    <label for="enunciado">Enunciado</label>
-                    <textarea class="form-control" id="enunciado" rows="5" placeholder="Digite o enunciado"></textarea>
-                    </div>
-                    <h5>Alternativas</h5>
-                    <div class="list-group" id="listaAlternativas"></div>
-					<button type="button" class="btn btn-dark mt-3" onclick="adicionarAlternativa()" id="btn-alternativa">
-						Adicionar Alternativa
-					</button>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" onClick="salvarQuestao(${questaoId ? questaoId : ''})" >Salvar</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                </div>
-                </div>
-            </div>
-            </div>`;
+		if (questao) {
+			document.getElementById("titulo").value = questao.titulo;
+			document.getElementById("enunciado").value = questao.enunciado;
+			questao.alternativas.forEach(a => adicionarAlternativa(a.texto, a.arquetipoid));
+		}
 
-            document.body.insertAdjacentHTML("beforeend", modalHTML);
+		$("#meuModal").modal("show");
+	}
 
-            
-            if (questaoId){
-                const questoes = JSON.parse(document.getElementById("questoes").value);
-                const questao = questoes.find(q => q.id === questaoId);
-                
-                document.getElementById("titulo").value = questao ? questao.titulo : "";
-                document.getElementById("enunciado").value = questao ? questao.enunciado : "";
-                questao.alternativas.forEach(a => adicionarAlternativa(a.texto, a.arquetipoid));
+	function adicionarAlternativa(texto, arquetipoid) {
+		const lista = document.getElementById('listaAlternativas');
+		const alternativa = document.createElement('div');
+		alternativa.className = 'list-group-item d-flex align-items-center';
+		
+		if(texto){
+			optionsArquetipos = arquetiposFiltrados.map(a => `<option value="${a.id}" ${a.id == arquetipoid ? 'selected' : ''}>${a.nome}</option>`).join("");
+		}
 
-            }
+		alternativa.innerHTML = `
+			<input type="text" class="form-control mr-2" name="alternativaTexto[]" value="${encodeValue(texto || '')}" placeholder="Digite a alternativa" style="flex: 2;">
+			<select class="form-control mr-2" name="alternativaArquetipo[]" value="${arquetipoid}" style="flex: 1;">
+			<option value="" hidden>Selecione...</option>
+			${optionsArquetipos}
+			</select>
+			<button type="button" class="btn btn-outline-danger" onclick="removerAlternativa(this)"><i class="fa fa-times"></i></button>
+		`;
 
-            $("#meuModal").modal("show");
-        }
+		lista.appendChild(alternativa);
+	}
 
-        function adicionarAlternativa(texto, arquetipoid) {
-            const lista = document.getElementById('listaAlternativas');
-            const alternativa = document.createElement('div');
-            alternativa.className = 'list-group-item d-flex align-items-center';
-            
-            if(texto){
-                optionsArquetipos = arquetiposFiltrados.map(a => `<option value="${a.id}" ${a.id == arquetipoid ? 'selected' : ''}>${a.nome}</option>`).join("");
-            }
+	function removerAlternativa(btn) {
+		btn.parentElement.remove();
+	}
 
-            alternativa.innerHTML = `
-                <input type="text" class="form-control mr-2" name="alternativaTexto[]" value="${encodeValue(texto || '')}" placeholder="Digite a alternativa" style="flex: 2;">
-                <select class="form-control mr-2" name="alternativaArquetipo[]" value="${arquetipoid}" style="flex: 1;">
-                <option value="">Selecione</option>
-                ${optionsArquetipos}
-                </select>
-                <button type="button" class="btn btn-danger btn-sm" onclick="removerAlternativa(this)">X</button>
-            `;
+	function salvarQuestao() {
+		const titulo = document.getElementById('titulo').value.trim();
+		const enunciado = document.getElementById('enunciado').value.trim();
+		const alternativasTexto = Array.from(document.getElementsByName('alternativaTexto[]')).map(input => input.value.trim());
+		const alternativasArquetipo = Array.from(document.getElementsByName('alternativaArquetipo[]')).map(select => select.value);
 
-            lista.appendChild(alternativa);
-        }
+		if (!titulo) {
+			Swal.error('O título é obrigatório. Preencha-o.');
+			return;
+		}
 
-        function removerAlternativa(btn) {
-            btn.parentElement.remove();
-        }
+		if (!enunciado) {
+			Swal.error('O enunciado é obrigatório. Preencha-o.');
+			return;
+		}
 
-        function salvarQuestao(questaoId) {
-            const titulo = document.getElementById('titulo').value.trim();
-            const enunciado = document.getElementById('enunciado').value.trim();
-            const alternativasTexto = Array.from(document.getElementsByName('alternativaTexto[]')).map(input => input.value.trim());
-            const alternativasArquetipo = Array.from(document.getElementsByName('alternativaArquetipo[]')).map(select => select.value);
+		if (alternativasTexto.length < 2) {
+			Swal.error('Adicione pelo menos duas alternativas.');
+			return;
+		}
 
-            if (!titulo) {
-                Swal.error('O título é obrigatório. Preencha-o.');
-                return;
-            }
+		for (let i = 0; i < alternativasTexto.length; i++) {
+			if (!alternativasTexto[i]) {
+				Swal.error('O texto da alternativa não pode estar vazio. Preencha-o.');
+				return;
+			}
+			if (!alternativasArquetipo[i]) {
+				Swal.error('Selecione um arquétipo para cada alternativa.');
+				return;
+			}
+		}
 
-            if (!enunciado) {
-                Swal.error('O enunciado é obrigatório. Preencha-o.');
-                return;
-            }
+		if (questao) {
+			questao.titulo = titulo;
+			questao.enunciado = enunciado;
+			questao.alternativas = alternativasTexto.map((texto, index) => ({
+				texto: texto,
+				arquetipoid: parseInt(alternativasArquetipo[index])
+			}));
 
-            if (alternativasTexto.length < 2) {
-                Swal.error('Adicione pelo menos duas alternativas.');
-                return;
-            }
+			tabela.row(trClicada).data(questao).invalidate().draw("page");
+		} else {
+			const novaQuestao = {
+				id: Date.now(),
+				titulo: titulo,
+				enunciado: enunciado,
+				alternativas: alternativasTexto.map((texto, index) => ({
+					texto: texto,
+					arquetipoid: parseInt(alternativasArquetipo[index])
+				}))
+			};
 
-            for (let i = 0; i < alternativasTexto.length; i++) {
-                if (!alternativasTexto[i]) {
-                    Swal.error('O texto da alternativa não pode estar vazio. Preencha-o.');
-                    return;
-                }
-                if (!alternativasArquetipo[i]) {
-                    Swal.error('Selecione um arquétipo para cada alternativa.');
-                    return;
-                }
-            }
-            const questoesElement = document.getElementById("questoes");
-            let questoes = [];
-            if (questoesElement.value && questoesElement.value !== "null") {
-                questoes = JSON.parse(questoesElement.value);
-            }
-            if (questaoId){
-                const index = questoes.findIndex(q => q.id === questaoId);
-                if (index !== -1) {
-                    questoes[index] = {
-                        id: questaoId,
-                        titulo: titulo,
-                        enunciado: enunciado,
-                        alternativas: alternativasTexto.map((texto, index) => ({
-                            texto: texto,
-                            arquetipoid: parseInt(alternativasArquetipo[index])
-                        }))
-                    };
-                }
-            }else{
-                const novaQuestao = {
-                    id: Date.now(),
-                    titulo: titulo,
-                    enunciado: enunciado,
-                    alternativas: alternativasTexto.map((texto, index) => ({
-                        texto: texto,
-                        arquetipoid: parseInt(alternativasArquetipo[index])
-                    }))
-                };
-                questoes.push(novaQuestao);
-            }
+			tabela.row.add(novaQuestao).draw(false);
+		}
 
+		$("#meuModal").modal("hide");
+	}
 
-            questoesElement.value = JSON.stringify(questoes);
-
-            $("#meuModal").modal("hide");
-            $("form").submit();
-            $('#tabela').DataTable().clear().rows.add(questoes).draw();
-        }
-
-        function removerQuestao(questaoId) {
-        Swal.okcancel("Tem certeza que deseja excluir esta questão?").then((result) => {
-            if (result.isConfirmed) {
-                const questoesElement = document.getElementById("questoes");
-                let questoes = [];
-                if (questoesElement.value) {
-                    questoes = JSON.parse(questoesElement.value);
-                }
-                questoes = questoes.filter(q => q.id !== questaoId);
-                questoesElement.value = JSON.stringify(questoes);
-                $('#tabela').DataTable().clear().rows.add(questoes).draw();
-                $("form").submit();
-            }
-        });
-    }
-
-        $('#tabela').DataTable({
-            data: <%- JSON.stringify(item.questoes) %>,
-            columns:[
-                        {
-                            data: "",
-                            render: function (data, type, row) {
-                                return `
-                                    <button class="btn btn-primary btn-sm" type="button" onclick="criarModal(${row.id})">Editar <i class="fa fa-fw fa-edit"></i></button>
-                                    <button class="btn btn-danger btn-sm" type="button" onclick="removerQuestao(${row.id})">Excluir <i class="fa fa-fw fa-times"></i></button>
-                                `;
-                            }
-                        },
-                        { title: 'Título', data: 'titulo' },
-                        { title: 'Enunciado', data: 'enunciado' }
-                    ],
+    tabela = prepareDataTable("tabela", {
+		order: [[1, "asc"]],
+		deferRender: true,
+		data: <%- JSON.stringify(item.questoes || []) %>,
+		columns:[
+			{
+				"class": "col-min",
+				searchable: false,
+				orderable: false,
+				data: "id",
+				render: function (data, type, row) {
+					return `
+						<button class="btn btn-sm btn-outline-primary" title="Editar" type="button" data-editar="1"><i class="fa fa-fw fa-edit"></i></button>
+						<button class="btn btn-sm btn-outline-danger" title="Excluir" type="button" data-excluir="1"><i class="fa fa-fw fa-times"></i></button>
+					`;
+				}
+			},
+			{ title: 'Ordem', type: 'num', "class": "col-min", data: function (row) { return (row.ordem || 0); } },
+			{ title: 'Título', data: 'titulo', render: encode },
+			{ title: 'Enunciado', "class": "obs-col quebra-linha", data: 'enunciado', render: encode }
+		],
     });
 
-        //<% } %>
+	$("#tabela").on("click", "tbody button", function () {
+		if (JsonWebApi.active)
+			return;
 
-        $("#form").validate({
-            rules: {
-                nome: {
-                    required: true
-                },
-                nomeexterno: {
-                    required: true,
-                },
-                iddisponibilidade: {
-                    required: true,
-                },
-                iddepartamento: {
-                    required: true,
-                },
-                anonimo: {
-                    required: true,
-                },
-                idpublicoalvo: {
-                    required: true,
-                },
-                url: {
-                    required: true,
-                    // url: true
-                },
-                descricao: {
-                    required: true,
-                },
-                corfundopagina: {
-                    required: true,
-                },
-                corfundocard: {
-                    required: true,
-                },
-                cortextocard: {
-                    required: true,
-                },
-                cordestaque: {
-                    required: true,
-                },
-                cortextodestaque: {
-                    required: true,
-                },
-                imagemintroducao: {
-                    tamanhoArquivoMaximoKiB: 16000,
-                },
-                imagemquestionario: {
-                    tamanhoArquivoMaximoKiB: 16000,
-                },
-                imagemlogo: {
-                    tamanhoArquivoMaximoKiB: 2048,
-                },
-                idarquetipos: {
-                    required: true
-                }
-            },
+		trClicada = this.parentNode.parentNode;
+		questao = tabela.row(trClicada).data();
 
-            submitHandler: function (form) {
-                if (JsonWebApi.active)
-                    return;
+		if (this.getAttribute("data-excluir")) {
+			Swal.okcancel("Tem certeza que deseja excluir esta questão?").then((result) => {
+				if (result.isConfirmed)
+					tabela.row(trClicada).remove().draw();
+			});
+		} else if (this.getAttribute("data-editar")) {
+			criarModal();
+		}
+	});
 
-                Swal.wait();
+	//<% } %>
 
-                $("#iddepartamento").val(getMultiselectSelection("#iddepartamentoselect").join(","));
-                $("#idpublicosalvos").val(getMultiselectSelection("#idpublicoalvoselect").join(","));
-                $("#hiddentextointroducao").val(CKEDITOR.instances.textointroducao.getData());
+	$("#form").validate({
+		rules: {
+			nome: {
+				required: true
+			},
+			nomeexterno: {
+				required: true,
+			},
+			iddisponibilidade: {
+				required: true,
+			},
+			iddepartamento: {
+				required: true,
+			},
+			anonimo: {
+				required: true,
+			},
+			idpublicoalvo: {
+				required: true,
+			},
+			url: {
+				required: true,
+				// url: true
+			},
+			descricao: {
+				required: true,
+			},
+			corfundopagina: {
+				required: true,
+			},
+			corfundocard: {
+				required: true,
+			},
+			cortextocard: {
+				required: true,
+			},
+			cordestaque: {
+				required: true,
+			},
+			cortextodestaque: {
+				required: true,
+			},
+			imagemintroducao: {
+				tamanhoArquivoMaximoKiB: 16000,
+			},
+			imagemquestionario: {
+				tamanhoArquivoMaximoKiB: 16000,
+			},
+			imagemlogo: {
+				tamanhoArquivoMaximoKiB: 2048,
+			},
+			idarquetipos: {
+				required: true
+			}
+		},
 
+		submitHandler: function (form) {
+			if (JsonWebApi.active)
+				return;
 
-                //<% if (item) { %>
+			Swal.wait();
 
-                $("#idarquetipos").val(getMultiselectSelection("#iddarquetiposselect").join(","));
+			$("#iddepartamento").val(getMultiselectSelection("#iddepartamentoselect").join(","));
+			$("#idpublicosalvos").val(getMultiselectSelection("#idpublicoalvoselect").join(","));
+			$("#hiddentextointroducao").val(CKEDITOR.instances.textointroducao.getData());
+			$("#questoes").val(JSON.stringify(tabela.rows().data().toArray()));
 
+			//<% if (item) { %>
 
-                JsonWebApi.postFormData("<%- root %>/api/questionario/editar", new FormData(form), function (response) {
-                    if (response.success) {
+			$("#idarquetipos").val(getMultiselectSelection("#iddarquetiposselect").join(","));
 
-                        const imagemIntroducao = document.getElementById("imagemintroducao");
-                        const chkExcluirImagemIntroducaoAtual = document.getElementById("chkExcluirImagemIntroducaoAtual");
-                        const imagemQuestionario = document.getElementById("imagemquestionario");
-                        const chkExcluirImagemQuestionarioAtual = document.getElementById("chkExcluirImagemQuestionarioAtual");
-                        const imagemLogo = document.getElementById("imagemlogo");
-                        const chkExcluirImagemLogoAtual = document.getElementById("chkExcluirImagemLogoAtual");
+			JsonWebApi.postFormData("<%- root %>/api/questionario/editar", new FormData(form), function (response) {
+				if (response.success) {
 
-                        if (imagemIntroducao.value) {
-                            imagemIntroducao.value = "";
-                            $("#imgIntroducao").attr("src", "<%- staticRoot %>/img/questionario/introducao/<%- (item && item.id) %>.jpg?v=" + response.value);
-                            $("#divImagemIntroducao").removeClass("d-none");
-                        } else if (chkExcluirImagemIntroducaoAtual.checked) {
-                            $("#divImagemIntroducao").addClass("d-none");
-                        }
+					const imagemIntroducao = document.getElementById("imagemintroducao");
+					const chkExcluirImagemIntroducaoAtual = document.getElementById("chkExcluirImagemIntroducaoAtual");
+					const imagemQuestionario = document.getElementById("imagemquestionario");
+					const chkExcluirImagemQuestionarioAtual = document.getElementById("chkExcluirImagemQuestionarioAtual");
+					const imagemLogo = document.getElementById("imagemlogo");
+					const chkExcluirImagemLogoAtual = document.getElementById("chkExcluirImagemLogoAtual");
 
-                        if (imagemQuestionario.value) {
-                            imagemQuestionario.value = "";
-                            $("#imgQuestionario").attr("src", "<%- staticRoot %>/img/questionario/<%- (item && item.id) %>.jpg?v=" + response.value);
-                            $("#divImagemQuestionario").removeClass("d-none");
-                        } else if (chkExcluirImagemQuestionarioAtual.checked) {
-                            $("#divImagemQuestionario").addClass("d-none");
-                        }
+					if (imagemIntroducao.value) {
+						imagemIntroducao.value = "";
+						$("#imgIntroducao").attr("src", "<%- staticRoot %>/img/questionario/introducao/<%- (item && item.id) %>.jpg?v=" + response.value);
+						$("#divImagemIntroducao").removeClass("d-none");
+					} else if (chkExcluirImagemIntroducaoAtual.checked) {
+						$("#divImagemIntroducao").addClass("d-none");
+					}
 
-                        if (imagemLogo.value) {
-                            imagemLogo.value = "";
-                            $("#imgLogo").attr("src", "<%- staticRoot %>/img/questionario/logo/<%- (item && item.id) %>.jpg?v=" + response.value);
-                            $("#divImagemLogo").removeClass("d-none");
+					if (imagemQuestionario.value) {
+						imagemQuestionario.value = "";
+						$("#imgQuestionario").attr("src", "<%- staticRoot %>/img/questionario/<%- (item && item.id) %>.jpg?v=" + response.value);
+						$("#divImagemQuestionario").removeClass("d-none");
+					} else if (chkExcluirImagemQuestionarioAtual.checked) {
+						$("#divImagemQuestionario").addClass("d-none");
+					}
 
-                        } else if (chkExcluirImagemLogoAtual.checked) {
-                            $("#divImagemLogo").addClass("d-none");
-                        }
+					if (imagemLogo.value) {
+						imagemLogo.value = "";
+						$("#imgLogo").attr("src", "<%- staticRoot %>/img/questionario/logo/<%- (item && item.id) %>.jpg?v=" + response.value);
+						$("#divImagemLogo").removeClass("d-none");
 
-                        chkExcluirImagemQuestionarioAtual.checked = false;
-                        chkExcluirImagemLogoAtual.checked = false;
-                        chkExcluirImagemIntroducaoAtual.checked = false;
-                        Swal.success("Questionário alterado com sucesso! " + emoji.happy);
-                    }
-                    else
-                        Swal.error(response.value + " " + emoji.sad);
-                });
+					} else if (chkExcluirImagemLogoAtual.checked) {
+						$("#divImagemLogo").addClass("d-none");
+					}
 
-                //<% } else { %>
+					chkExcluirImagemQuestionarioAtual.checked = false;
+					chkExcluirImagemLogoAtual.checked = false;
+					chkExcluirImagemIntroducaoAtual.checked = false;
+					Swal.success("Questionário alterado com sucesso! " + emoji.happy);
+				}
+				else
+					Swal.error(response.value + " " + emoji.sad);
+			});
 
-                JsonWebApi.postFormData("<%- root %>/api/questionario/criar", new FormData(form), function (response) {
-                    if (response.success) {
-                        CKEDITOR.instances.textointroducao.setData("");
-                        resetForm("#form");
-                        Swal.success("Questionário criado com sucesso! " + emoji.happy).then(() => {
-                            JsonWebApi.redirect("<%- root %>/questionario/editar?id=" + response.value);
-                        });
-                    } else {
-                        Swal.error(response.value + " " + emoji.sad);
-                    }
-                });
+			//<% } else { %>
 
-                //<% } %>
-            }
-        });
-        
-        //]]>
-    </script>
+			JsonWebApi.postFormData("<%- root %>/api/questionario/criar", new FormData(form), function (response) {
+				if (response.success) {
+					CKEDITOR.instances.textointroducao.setData("");
+					resetForm("#form");
+					Swal.success("Questionário criado com sucesso! " + emoji.happy).then(() => {
+						JsonWebApi.redirect("<%- root %>/questionario/editar?id=" + response.value);
+					});
+				} else {
+					Swal.error(response.value + " " + emoji.sad);
+				}
+			});
+
+			//<% } %>
+		}
+	});
+	
+	//]]>
+</script>
