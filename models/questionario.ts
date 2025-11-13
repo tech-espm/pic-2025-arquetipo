@@ -7,7 +7,7 @@ interface Questionario {
 	nome: string;
 	nomeexterno: string;
 	iddisponibilidade: number;
-	anonimo: boolean;
+	anonimo: boolean | number;
 	url: string;
 	descricao: string;
 	corfundopagina: string;

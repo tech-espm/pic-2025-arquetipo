@@ -53,9 +53,9 @@
             <label for="anonimo">Anônimo</label>
             <select id="anonimo" name="anonimo" class="form-control" size="1">
                 <option value="">Selecione...</option>
-                <option value="0" <%-((item && item.anonimo==0) ? 'selected="selected"' : '' ) %>> Sim
+                <option value="1" <%-((item && item.anonimo==1) ? 'selected="selected"' : '' ) %>> Sim
                 </option>
-                <option value="1" <%-((item && item.anonimo==1) ? 'selected="selected"' : '' ) %>>Não
+                <option value="0" <%-((item && item.anonimo==0) ? 'selected="selected"' : '' ) %>>Não
                 </option>
             </select>
         </div>

@@ -1,142 +1,87 @@
 import app = require("teem");
 import Validacao = require("../utils/validacao");
-
+import Publico = require("../enums/publico");
+import Questionario = require("./questionario");
+import Perfil = require("../enums/perfil");
+import Arquetipo = require("./arquetipo");
 
 interface Submissao {
-	id: number;
-	idquestionario: number;
-	nome: string | null;
-	telefone: string | null;
-	email: string | null;
-	resposta: any;
+    id: number | null;
+    idquestionario: number;
+    idpublicoalvo: Publico;
+    nome: string | null;
+    telefone: string | null;
+    email: string | null;
+    resposta: any;
 }
 
 class Submissao {
-public static async criarOuEditar(submissao: Submissao, idquestionario: number): Promise<string | Submissao> {
-	const erro = Submissao.validar(submissao);
-	if (erro)
-		return erro;
 
-	try {
-		await app.sql.connect(async (sql) => {
-			let existente : number = await sql.scalar(
-				"SELECT id FROM submissao WHERE idquestionario = ? AND email = ?",
-				[idquestionario, submissao.email]
-			);
-			
-			await sql.beginTransaction();
+    public static validar(s: Submissao): string | null {
+        if (!s) 
+            return "Submissão inválida";
 
+        if (!s.idquestionario || isNaN(s.idquestionario)) 
+            return "Questionário inválido";
 
-			if (existente) {
-				await sql.query(
-					`UPDATE submissao 
-					   SET nome = ?, telefone = ?, resposta = ? 
-					 WHERE id = ?`,
-					[
-						submissao.nome,
-						submissao.telefone,
-						JSON.stringify(submissao.resposta),
-						existente
-					]
-				);
-				submissao.id = existente;
-			} else {
-				await sql.query(
-					`INSERT INTO submissao (idquestionario, nome, telefone, email, resposta)
-					 VALUES (?, ?, ?, ?, ?)`,
-					[
-						submissao.idquestionario,
-						submissao.nome,
-						submissao.telefone,
-						submissao.email,
-						JSON.stringify(submissao.resposta)
-					]
-				);
-				submissao.id = await sql.scalar("SELECT LAST_INSERT_ID()");
-			}
+        if (!s.idpublicoalvo || !(s.idpublicoalvo == Publico.Aluno || s.idpublicoalvo == Publico.Funcionario || s.idpublicoalvo == Publico.Externo))
+            return "Público alvo inválido";
 
-			await sql.commit();
-		});
-	} catch (e) {
-		return "Erro ao salvar submissão: " + (e instanceof Error ? e.message : e);
-	}
+        if (!s.nome)
+            return "Nome inválido";
 
-	return submissao;
-}
+        if (!s.email || !Validacao.isEmail(s.email))
+            return "Email inválido";
 
+        if (!s.resposta) 
+            return "Resposta obrigatória";
 
-	public static validar(s: Submissao): string | null {
-		if (!s) 
-			return "Submissão inválida";
+        return null; 
+    }
 
-		if (!s.idquestionario || isNaN(s.idquestionario)) 
-			return "Questionário inválido";
+    public static async criar(s: Submissao): Promise<string | number> {
+        const erro = Submissao.validar(s);
+        if (erro)
+            return erro;
 
-		if (!s.resposta) 
-			return "Resposta obrigatória";
+        const counts: Record<string, number> = {};
+        for (const key in s.resposta) {
+            const id = s.resposta[key] as number; 
+            counts[id] = (counts[id] || 0) + 1;
+        }
+        const arquetipoId = s.resposta.arquetipoid = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+        try {
+            await app.sql.connect(async (sql) => {
+				const questionario: Questionario = await Questionario.obter(s.idquestionario, 0, Perfil.Administrador);
 
-		if (!s.nome || s.nome.trim().length === 0)
-			return "Nome obrigatório para respondentes externos";
+				if (!questionario)
+					"Questionário inválido";
 
-		if (!s.email) 
-			return "Email inválido";
+				if (questionario.anonimo == 1){
+					s.email = null;
+					s.nome = null;
+					s.telefone = null;
+				}
 
-		if (!s.telefone)
-			return "Telefone inválido";
+                await sql.query(`Insert into submissao (idquestionario, idpublicoalvo, nome, telefone, email, resposta) values (?, ?, ?, ?, ?, ?)`, [
+                    					   				s.idquestionario, s.idpublicoalvo, s.nome, s.telefone || null,s.email, JSON.stringify(s.resposta)]);
+            });
 
-		return null; 
-	}
+        } catch (e) {
+            return "Erro ao salvar submissão: " + (e);
+        }
 
-	public static async criar(s: Submissao): Promise<string | Submissao> {
-		const res = Submissao.validar(s);
-		if (res)
-			return res;
+        return Number(arquetipoId);
+    }
 
-		try {
-			await app.sql.connect(async (sql) => {
-				await sql.query(`INSERT INTO submissao (idquestionario, nome, telefone, email, resposta) VALUES (?, ?, ?, ?, ?)`, [s.idquestionario, s.nome, s.telefone, s.email, JSON.stringify(s.resposta)]);
-				s.id = await sql.scalar("SELECT LAST_INSERT_ID()");
-			});
-		} catch (e) {
-			return "Erro ao salvar submissão: " + (e instanceof Error ? e.message : e);
-		}
+    public static async obterPorQuestionario(idquestionario: number): Promise<Submissao[]> {
+        let lista: Submissao[] = [];
 
-		return s;
-	}
-
-	public static async validarRespondente(email: String): Promise<boolean> {
-		return true;
-	}
-
-	public static async obterPorId(id: number): Promise<Submissao | null> {
-		let s: Submissao = null;
-
-		await app.sql.connect(async (sql) => {
-			s = await sql.scalar(`
-				SELECT id, idquestionario, nome, telefone, email, resposta FROM submissao WHERE id = ?`, [id]);
-		});
-
-		return s || null;
-	}
-
-	public static async obterResposta(idquestionario: number,email: string, idusuario?: number | null): Promise<Submissao | null> {
-
-		return await app.sql.connect(async (sql) => {
-			return await sql.scalar(`
-				SELECT resposta FROM submissao WHERE email = ? and idquestionario = ?`, [email, idquestionario]);
-		});
-	}
-
-	public static async listarPorQuestionario(idquestionario: number): Promise<Submissao[]> {
-		let lista: Submissao[] = [];
-
-		await app.sql.connect(async (sql) => {
-			lista = await sql.query(`
-				SELECT resposta FROM submissao WHERE idquestionario = ? ORDER BY id DESC`, [idquestionario]);
-		});
-
-		return lista || [];
-	}
+        await app.sql.connect(async (sql) => {
+            lista = await sql.query(`Select idpublicoalvo, nome, telefone, email, resposta from submissao where idquestionario = ? order by id desc`, [idquestionario]);
+        });
+        return lista || [];
+    }
 }
 
 export = Submissao;

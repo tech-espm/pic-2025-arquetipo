@@ -166,11 +166,13 @@ CREATE TABLE questionario_arquetipo (
 CREATE TABLE submissao (
   id INT NOT NULL AUTO_INCREMENT,
   idquestionario INT NOT NULL,
+  idpublicoalvo INT NOT NULL,
   nome VARCHAR(255),
   telefone VARCHAR(15),
-  email VARCHAR(255) NOT NULL,
+  email VARCHAR(255),
   resposta JSON NOT NULL,
   PRIMARY KEY (id),
   UNIQUE KEY submissao_email_UN(email, idquestionario),
-  CONSTRAINT fk_qs_questionario_FK FOREIGN KEY (idquestionario) REFERENCES questionario(id) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT fk_qs_questionario_FK FOREIGN KEY (idquestionario) REFERENCES questionario(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_ps_publicoalvo FOREIGN KEY (idpublicoalvo) REFERENCES publico(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );

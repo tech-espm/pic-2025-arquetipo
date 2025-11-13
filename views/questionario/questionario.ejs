@@ -14,8 +14,8 @@
     background-repeat: no-repeat;
     background-attachment: fixed;
     min-height: 100vh;
-    color :black;
-    transition: background-image 0.4s ease-in-out; 
+    color: var(--cor-texto-card);
+    transition: background-image 0.4s ease-in-out;
   }
 
   .tela {
@@ -29,7 +29,7 @@
     opacity: 1;
   }
 
-  .tela > .container-fluid > .row {
+  .tela>.container-fluid>.row {
     min-height: 100vh;
   }
 
@@ -41,6 +41,7 @@
   .zero-padding {
     padding: 0 !important;
   }
+
   .alternativa-card {
     display: block;
     width: 100%;
@@ -81,164 +82,148 @@
     font-weight: bolder;
   }
 
-  /* criar campo cor do texto introducao */
   .cor-texto-introducao {
     color: white;
   }
 
-  .invalid-feedback {
-    display: block;
-    margin-top: -0.5rem;
-  }
-
-  .form-floating {
-    position: relative;
-  }
-
-  .form-floating .invalid-feedback {
-    margin-top: 0.25rem;
-    font-size: 0.875em;
-  }
-
-  .form-floating>.form-control,
-  .form-floating>.form-select {
-    height: calc(3.5rem + 2px);
-    line-height: 1.25;
-    padding: 1rem 0.75rem;
-  }
-
-  .form-floating>.form-control::placeholder {
-    color: transparent;
-  }
-
-  .form-floating>label {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    padding: 1rem 0.75rem;
-    pointer-events: none;
-    border: 1px solid transparent;
-    transform-origin: 0 0;
-    transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
-  }
-
-  .form-floating>.form-control:focus,
-  .form-floating>.form-control:not(:placeholder-shown),
-  .form-floating>.form-select {
-    padding-top: 1.625rem;
-    padding-bottom: 0.625rem;
-  }
-
-  .form-floating>.form-control:focus~label,
-  .form-floating>.form-control:not(:placeholder-shown)~label,
-  .form-floating>.form-select~label {
-    opacity: 0.65;
-    transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
-  }
 </style>
-
-
-<!-- <a href="<%- urlCallback %>" target="_blank">Visualizar</a> -->
-
-<div id="questionario">
-  <div class="tela ativa" id="introducao" data-background="<%- staticRoot %>/img/questionario/introducao/<%- (item && item.id) %>.jpg?v=<%- (item && item.versaointroducao) %>">
-    <div class="container">
-      <div class="row justify-content-center align-items-center vh-100">
-        <div class="col-12 col-md-8 col-lg-6 text-center">
-          <div class="cor-texto-introducao"><%- item.textointroducao %></div>
-          <button class="btn btn-primary btn-lg mt-3" onclick="questionario.avancar()">COMEÇAR</button>
+  
+  
+  
+  <div id="questionario">
+    <div class="tela ativa" id="introducao" data-background="<%- staticRoot %>/img/questionario/introducao/<%- (item && item.id) %>.jpg?v=<%- (item && item.versaointroducao) %>">
+      <div class="container">
+        <div class="row justify-content-center align-items-center vh-100">
+          <div class="col-12 col-md-8 col-lg-6 text-center">
+            <div class="cor-texto-introducao"><%- item.textointroducao %></div>
+            <button class="btn btn-primary btn-lg mt-3" onclick="questionario.avancar()">COMEÇAR</button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <% if (paraTodos) { %>
-  <!-- <div class="tela" id="cadastro">
-    <form id="formcadastro">
-      <input type="hidden" id="idquestionario" name="idquestionario" value="<%- item.id %>">
-      <div class="form-floating mb-3">
-        <input type="text" id="nome" name="nome" class="form-control" placeholder="Nome" required autofocus>
-        <label for="nome">Nome</label>
-      </div>
-      <div class="form-floating mb-3">
-        <input type="email" id="email" name="email" class="form-control" placeholder="Email" required>
-        <label for="email">Email</label>
-      </div>
-      <div class="form-floating mb-3">
-        <input type="tel" id="telefone" name="telefone" class="form-control" placeholder="Telefone" required>
-        <label for="telefone">Telefone</label>
-      </div>
-      <button type="submit" class="btn btn-primary">Avançar</button>
-    </form>
-  </div> -->
-  <% } %>
 
-  <% item.questoes.forEach((questao) => { %>
-  <div class="tela questao" id="<%- questao.id %>" data-questao="<%- questao.id %>" data-obrigatoria="true" data-background="<%- staticRoot %>/img/questionario/<%- (item && item.id) %>.jpg?v=<%- (item && item.versaoquestionario) %>">
-    <div class="container-fluid">
-      <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6 d-flex flex-column justify-content-center p-4">
-          <div class="card">
-            <div class="card-header">
-              Header
-            </div> <!-- card-header -->
-            <div class="card-body py-0">
-              <h2 class="h4 fw-normal mt-4 mb-2"><%- questao.titulo %></h2>
-              <p class="lead fs-5 mt-2 mb-4"><%- questao.enunciado %></p>
+    <% if (loginESPM && loginExterno && !dadosToken) { %>
+    <div class="tela" id="identificacao" data-background="<%- staticRoot %>/img/questionario/introducao/<%- (item && item.id) %>.jpg?v=<%- (item && item.versaointroducao) %>">
+      <div class="container">
+        <div class="row justify-content-center align-items-center vh-100">
+          <div class="col-12 col-md-8 col-lg-6 text-center">
+            <div class="cor-texto-introducao"> Você é <strong>aluno</strong> ou <strong>funcionário</strong> da ESPM?</div>
+            <a class="btn btn-primary btn-lg mt-3" href="<%- urlCallback %>">Sim, sou da ESPM</a>
+            <button class="btn btn-primary btn-lg mt-3" onclick="questionario.avancar()">Não, sou visitante</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <% } %>
+  
 
-              <div class="alternativas-container" id="alternativas-q-<%- questao.id %>">
-                <% questao.alternativas.forEach((alt) => { %>
-                  <div class="form-check-alternativa">
-                    <input 
-                      class="form-check-input d-none q-<%- questao.id %>" 
-                      type="radio" 
-                      name="questao-<%- questao.id %>" 
-                      id="<%- questao.id + '-' + alt.arquetipoid %>" 
-                      value="<%- alt.arquetipoid %>" 
-                      onchange="questionario.registrarResposta('<%- questao.id %>', '<%- alt.arquetipoid %>')"
-                      <%- (resposta && resposta[questao.id] == alt.arquetipoid) ? 'checked' : '' %>>
-                    
-                    <label 
-                      class="form-check-label alternativa-card <%- (resposta && resposta[questao.id] == alt.arquetipoid) ? 'selecionada' : '' %>" 
-                      for="<%- questao.id + '-' + alt.arquetipoid %>">
+    <% if (loginExterno && !dadosToken) { %>
+    
+    <div class="tela" id="cadastro" data-background="<%- staticRoot %>/img/questionario/introducao/<%- (item && item.id) %>.jpg?v=<%- (item && item.versaointroducao) %>">
+      <div class="container-fluid">
+        <div class="row justify-content-center">
+          <div class="col-md-8 col-lg-6 d-flex flex-column justify-content-center">
+            <div class="card o-hidden border-0 shadow-lg my-5">
+              <div class="card-body p-0">
+                <div class="row justify-content-center align-items-center">
+                  <div class="col-sm-12">
+                    <div class="p-5">
+                      <div class="mb-4 text-center">
+                        <img style="width: 100%; max-width: 250px;" alt="Logo ESPM" src="<%- staticRoot %>/img/logo.png" />
+                      </div>
+                      <form method="POST" id="formcadastro">
+                        <input type="hidden" id="idquestionario" name="idquestionario" value="<%- item.id %>">
+
+                        <div class="form-group">
+                          <input type="text" class="form-control" id="nome" name="nome" placeholder="Nome" required>
+                        </div>
+                        <div class="form-group">
+                          <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
+                        </div>
+                        <div class="form-group">
+                          <input type="tel" class="form-control" id="telefone" name="telefone" placeholder="Telefone" required>
+                        </div>
+                        <input type="hidden" id="aluno" name="aluno" value="false">
+                        <button type="submit" class="btn btn-primary btn-user btn-block">
+                          Começar
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <% } else if (dadosToken) { %>
+    <div>
+      <form id="formcadastro" style="display: none;">
+        <input type="text" id="nome" name="nome" value="<%- dadosToken.nome %>">
+        <input type="email" id="email" name="email" value="<%- dadosToken.email %>">
+        <input type="text" id="aluno" name="aluno" value="<%- dadosToken.aluno %>">
+        <input type="tel" id="telefone" name="telefone" value="">
+      </form>
+    </div>
+      
+    <% } %>
+
+
+    <% item.questoes.forEach((questao) => { %>
+    <div class="tela questao" id="<%- questao.id %>" data-questao="<%- questao.id %>" data-obrigatoria="true" data-background="<%- staticRoot %>/img/questionario/<%- (item && item.id) %>.jpg?v=<%- (item && item.versaoquestionario) %>">
+      <div class="container-fluid">
+        <div class="row justify-content-center">
+          <div class="col-md-8 col-lg-6 d-flex flex-column justify-content-center p-4">
+            <div class="card">
+              <!-- <div class="card-header">
+                Header loading
+              </div> -->
+              <div class="card-body py-0">
+                <h2 class="h4 fw-normal mt-4 mb-2"><%- questao.titulo %></h2>
+                <p class="lead fs-5 mt-2 mb-4"><%- questao.enunciado %></p>
+
+                <div class="alternativas-container" id="alternativas-q-<%- questao.id %>">
+                  <% questao.alternativas.forEach((alt) => { %>
+                    <div class="form-check-alternativa">
+                    <input class="form-check-input d-none q-<%- questao.id %>" type="radio" name="questao-<%- questao.id %>" id="<%- questao.id + '-' + alt.arquetipoid %>" value="<%- alt.arquetipoid %>" onchange="questionario.registrarResposta('<%- questao.id %>', '<%- alt.arquetipoid %>')" <%- (resposta && resposta[questao.id] == alt.arquetipoid) ? 'checked' : '' %>>
+
+                    <label class="form-check-label alternativa-card <%- (resposta && resposta[questao.id] == alt.arquetipoid) ? 'selecionada' : '' %>" for="<%- questao.id + '-' + alt.arquetipoid %>">
                       <%- alt.texto %>
                     </label>
                   </div>
-                <% }) %>
-              </div> <!-- alternativas-container -->
-
-              <div class="row" style="margin: 1.5rem -1.25rem 0;">
-                <div class="col-6 btn btn-navegacao-voltar border-0 rounded-0 p-3" onclick="questionario.voltar()">
-                  <span class="fw-bold">Voltar</span>
+                  <% }) %>
                 </div>
-                <div class="col-6 btn btn-navegacao-avancar border-0 rounded-0 p-3" onclick="questionario.avancar()">
-                  <span class="fw-bold">Avançar</span>
+                <div class="row" style="margin: 1.5rem -1.25rem 0;">
+                  <div class="col-6 btn btn-navegacao-voltar border-0 rounded-0 p-3" onclick="questionario.voltar()">
+                    <span class="fw-bold">Voltar</span>
+                  </div>
+                  <div class="col-6 btn btn-navegacao-avancar border-0 rounded-0 p-3" onclick="questionario.avancar()">
+                    <span class="fw-bold">Avançar</span>
+                  </div>
                 </div>
+                
               </div>
-
-            </div> <!-- card-body -->
-          </div> <!-- card -->
-        </div> <!-- col-md-8 col-lg-6 -->
-      </div> <!-- row -->
-    </div> <!-- container-fluid -->
-
-  </div> <!-- tela questao -->
-
-  <% }) %>
-
-  <div class="tela" id="conclusao" data-background="<%- staticRoot %>/img/questionario/<%- (item && item.id) %>.jpg?v=<%- (item && item.versaoquestionario) %>">
-    <div class="container">
-      <div class="row">
-        <div class="col-8" id="arquetipo"></div>
-        <div class="col-4"><img id="imgconclusao" src="" alt=""></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+    <% }) %>
 
-</div> <!-- id="questionario" -->
+    <div class="tela" id="conclusao" data-background="<%- staticRoot %>/img/questionario/<%- (item && item.id) %>.jpg?v=<%- (item && item.versaoquestionario) %>">
+      <div class="container">
+        <div class="row">
+          <div class="col-8" id="arquetipo"></div>
+          <div class="col-4"><img id="imgconclusao" src="" alt=""></div>
+        </div>
+      </div>
+    </div>
 
-<%- contentFor("scripts") %>
+  </div> 
+  <%- contentFor("scripts") %>
 <script>
   //<![CDATA[
   "use strict";
@@ -247,22 +232,37 @@
     constructor(selector) {
       this.telas = document.querySelectorAll(selector);
       this.telaAtual = 0;
-      //<% if (resposta) { %>
-        this.respostas = <%- JSON.stringify(resposta) %>;
-      //<% } else{ %>
-        this.respostas = {};
-        this.configurarValidacao();
-      //<% } %>
-      this.mostrarTela(0);
+      
+      this.dadosToken = <%- dadosToken ? JSON.stringify(dadosToken) : 'null' %>;
+      this.externo = !this.dadosToken;
 
+      //<% if (resposta) { %>
+      this.resposta = <%- JSON.stringify(resposta) %>;
+      //<% } else{ %>
+      this.resposta = {};
+      //<% } %>
+
+      this.configurarValidacao();
+
+
+      if (this.dadosToken) {
+        const primeiraQuestaoIndex = Array.from(this.telas).findIndex(t => t.classList.contains("questao"));
+        if (primeiraQuestaoIndex > -1) {
+          this.mostrarTela(primeiraQuestaoIndex);
+        } else {
+          this.mostrarTela(0); 
+        }
+      } else {
+        this.mostrarTela(0);
+      }
     }
 
     mostrarTela(index) {
       this.telas.forEach((t, i) => t.classList.toggle("ativa", i === index));
       this.telaAtual = index;
-
+      
       const novoBackground = this.telas[index].dataset.background;
-
+      
       if (novoBackground) {
         document.body.style.backgroundImage = `url('${novoBackground}')`;
       } else {
@@ -271,7 +271,10 @@
     }
 
     avancar() {
-      if (!this.validarTela()) return;
+      if (!this.validarTela() && this.telas[this.telaAtual].id !== 'cadastro') {
+          return;
+      }
+
       if (this.telaAtual + 1 < this.telas.length) {
         this.mostrarTela(this.telaAtual + 1);
         if (this.telas[this.telaAtual].id === "conclusao") this.gerarConclusao();
@@ -282,61 +285,60 @@
       if (this.telaAtual > 0) this.mostrarTela(this.telaAtual - 1);
     }
 
-registrarResposta(questaoId, alternativaId) {
-      this.respostas[questaoId] = alternativaId;
-      
+    registrarResposta(questaoId, alternativaId) {
+      this.resposta[questaoId] = alternativaId;
+
       const idInput = `${questaoId}-${alternativaId}`;
       const input = document.getElementById(idInput);
-      
+
       const containerAlternativas = document.getElementById(`alternativas-q-${questaoId}`);
       if (containerAlternativas) {
         containerAlternativas.querySelectorAll('.alternativa-card').forEach(label => {
           label.classList.remove('selecionada');
         });
       }
-
+      
       if (input) {
         const label = document.querySelector(`label[for='${idInput}']`);
         if (label) {
           label.classList.add('selecionada');
         }
-        
+
         $(`#${idInput}`).prop("checked", true);
       }
     }
 
     validarTela() {
       const tela = this.telas[this.telaAtual];
+
+      if (tela.id === "cadastro") {
+          return $("#formcadastro").valid();
+      }
+
       const questaoId = tela.dataset.questao;
-      if (tela.classList.contains("questao") && !this.respostas[questaoId]) {
+      if (tela.classList.contains("questao") && !this.resposta[questaoId]) {
         Swal.fire("Atenção", "Selecione uma alternativa antes de avançar.", "warning");
         return false;
       }
       return true;
     }
 
-    //mudar validação se o usuario for interno
     configurarValidacao() {
-      //<% if (paraTodos) { %>
+      //<% if (loginExterno && !dadosToken) { %>
         $("#formcadastro").validate({
           errorElement: "div",
           errorClass: "invalid-feedback",
           highlight: el => $(el).addClass("is-invalid").removeClass("is-valid"),
           unhighlight: el => $(el).removeClass("is-invalid").addClass("is-valid"),
           errorPlacement: (error, el) => error.insertAfter(el),
+
           submitHandler: (form) => {
             if (JsonWebApi.active) return;
-            JsonWebApi.postFormData("<%- root %>/api/submissao/obter", new FormData(form), (response) => {
-              if (response.success) {
-                if (!response.value.mensagem) this.preencherForm(response.value);
-                this.avancar();
-              } else {
-                Swal.error(response.value + " " + emoji.sad);
-              }
-            });
+            
+            this.avancar();
           }
         });
-    //<% }%>
+      //<% } %>
     }
 
     preencherForm(res) {
@@ -346,23 +348,16 @@ registrarResposta(questaoId, alternativaId) {
 
     gerarConclusao() {
       if (JsonWebApi.active) return;
-
-
+      
       let req = {
-        resposta: this.respostas,
+        resposta : this.resposta,
         idquestionario: <%- item.id %>,
-        <%- usuario ? "idusuario:"+usuario.id+"," : `` %>
-        email: $("#email").val(),
-        nome: $("#nome").val(),
-        telefone: $("#telefone").val()
+        nome: document.getElementById("nome").value,
+        email: document.getElementById("email").value,
+        telefone: document.getElementById("telefone").value || null, 
+        aluno: $("#aluno").val() == "true" ? true : false,
+        externo: this.externo
       };
-
-      const counts = {};
-      for (const key in this.respostas) {
-        const id = this.respostas[key];
-        counts[id] = (counts[id] || 0) + 1;
-      }
-      req.resposta.arquetipoid = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
 
       JsonWebApi.post("<%- root %>/api/submissao/criarOuEditar", req, (response) => {
         if (response.success) {
@@ -374,9 +369,7 @@ registrarResposta(questaoId, alternativaId) {
         }
       });
     }
-
   }
-
   
   //]]>
   const questionario = new Questionario(".tela");
