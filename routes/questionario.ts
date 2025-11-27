@@ -8,7 +8,6 @@ import publicos = require("../models/publico");
 import Questionario = require("../models/questionario");
 import Perfil = require("../enums/perfil");
 
-
 class QuestionarioRoute {
 	public static async criar(req: app.Request, res: app.Response) {
 		let u = await Usuario.cookie(req);

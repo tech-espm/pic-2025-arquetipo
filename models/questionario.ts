@@ -475,6 +475,19 @@ class Questionario {
 					questionario.iddepartamento as number[]
 				);
 
+				if (questionario.questoes) {
+					const questoes = JSON.parse(questionario.questoes);
+					for (let i = 0; i < questoes.length; i++) {
+						const questao = questoes[i];
+						const alternativas = questao.alternativas;
+						for (let j = 0; j < alternativas.length; j++) {
+							const arquetipoid = alternativas[j].arquetipoid;
+							if (!(questionario.idarquetipos as number[]).includes(arquetipoid))
+								return `Arquétipo não encontrado para a alternativa "${alternativas[j].texto}" da questão "${questao.titulo}"`;
+						}
+					}
+				}
+
 				const iddepartamentoQuestionario = (await sql.query("SELECT iddepartamento FROM questionario_departamento WHERE idquestionario = ?", [questionario.id]) as any[]).map(d => d.iddepartamento);
 				const idarquetipoQuestionario = (await sql.query("SELECT idarquetipo FROM questionario_arquetipo WHERE idquestionario = ?", [questionario.id]) as any[]).map(d => d.idarquetipo);
 
