@@ -92,7 +92,6 @@
     </div>
 </div>
 
-
 <div class="row">
     <div class="col-12">
         <div class="form-group">
@@ -281,7 +280,29 @@
 	<h2 class="mt-0 mb-5 text-primary text-center"><i class="fa fa-list"></i> Questões</h2>
 
     <div class="mx-ncard">
-		<table class="table table-flush table-striped table-hover" id="tabela"></table>
+		<table class="table table-flush table-striped table-hover" id="tabela">
+			<thead>
+				<tr>
+					<th></th>
+					<th class="text-center col-min">Ordem</th>
+					<th>Título</th>
+					<th class="obs-col quebra-linha">Enunciado</th>
+				</tr>
+			</thead>
+			<tbody class="questao-contador" id="tabelaQuestoesBody">
+				<% for (let i=0; i < item.questoes.length; i++) { %>
+					<tr data-questao="<%= JSON.stringify(item.questoes[i]) %>" class="questao-movimento">
+						<td class="col-min">
+							<button class="btn btn-sm btn-outline-primary" title="Editar" type="button" data-editar="1"><i class="fa fa-fw fa-edit"></i></button>
+							<button class="btn btn-sm btn-outline-danger" title="Excluir" type="button" data-excluir="1"><i class="fa fa-fw fa-times"></i></button>
+						</td>
+						<td class="questao-enum text-center col-min"></td>
+						<td><%= item.questoes[i].titulo %></td>
+						<td class="obs-col quebra-linha"><%= item.questoes[i].enunciado %></td>
+					</tr>
+				<% } %>
+			</tbody>
+		</table>
 	</div>
 
     <div class="row">
@@ -294,15 +315,37 @@
         
 <% } %>
 
+<%- contentFor("styles") %>
+
+
+<style type="text/css">
+
+.questao-contador {
+	counter-reset: questao-contador;
+}
+
+.questao-enum::before {
+	counter-increment: questao-contador;
+	content: counter(questao-contador);
+}
+
+.questao-movimento {
+	cursor: move;
+}
+
+</style>
 
 <%- contentFor("scripts") %>
 
+<script type="text/javascript" src="<%- staticRoot %>/lib/jquery-ui-1.13.2/jquery-ui.min.js"></script>
 <link rel="stylesheet" type="text/css" href="<%- staticRoot %>/css/ckeditor.css" />
 <script type="text/javascript" src="<%- staticRoot %>/lib/ckeditor/ckeditor.js"></script>
 
 <script type="text/javascript">
 	//<![CDATA[
 	"use strict";
+
+	$("#tabelaQuestoesBody").sortable().disableSelection();
 
 	document.getElementById("urlbase").innerText = location.protocol + '//' + location.hostname + "/teste/";
 
@@ -448,7 +491,10 @@
 				arquetipoid: parseInt(alternativasArquetipo[index])
 			}));
 
-			tabela.row(trClicada).data(questao).invalidate().draw("page");
+			$(trClicada).attr("data-questao", JSON.stringify(questao));
+			const tds = $(trClicada).find("td");
+			$(tds[2]).text(questao.titulo);
+			$(tds[3]).text(questao.enunciado);
 		} else {
 			const novaQuestao = {
 				id: Date.now(),
@@ -460,46 +506,33 @@
 				}))
 			};
 
-			tabela.row.add(novaQuestao).draw(false);
+			$("#tabelaQuestoesBody").append(`
+				<tr data-questao="${encodeValue(JSON.stringify(novaQuestao))}" class="questao-movimento">
+					<td class="col-min">
+						<button class="btn btn-sm btn-outline-primary" title="Editar" type="button" data-editar="1"><i class="fa fa-fw fa-edit"></i></button>
+						<button class="btn btn-sm btn-outline-danger" title="Excluir" type="button" data-excluir="1"><i class="fa fa-fw fa-times"></i></button>
+					</td>
+					<td class="questao-enum text-center col-min"></td>
+					<td>${encode(novaQuestao.titulo)}</td>
+					<td class="obs-col quebra-linha">${encode(novaQuestao.enunciado)}</td>
+				</tr>
+			`);
 		}
 
 		$("#meuModal").modal("hide");
 	}
-
-    tabela = prepareDataTable("tabela", {
-		order: [[1, "asc"]],
-		deferRender: true,
-		data: <%- JSON.stringify(item.questoes || []) %>,
-		columns:[
-			{
-				"class": "col-min",
-				searchable: false,
-				orderable: false,
-				data: "id",
-				render: function (data, type, row) {
-					return `
-						<button class="btn btn-sm btn-outline-primary" title="Editar" type="button" data-editar="1"><i class="fa fa-fw fa-edit"></i></button>
-						<button class="btn btn-sm btn-outline-danger" title="Excluir" type="button" data-excluir="1"><i class="fa fa-fw fa-times"></i></button>
-					`;
-				}
-			},
-			{ title: 'Ordem', type: 'num', "class": "col-min", data: function (row) { return (row.ordem || 0); } },
-			{ title: 'Título', data: 'titulo', render: encode },
-			{ title: 'Enunciado', "class": "obs-col quebra-linha", data: 'enunciado', render: encode }
-		],
-    });
 
 	$("#tabela").on("click", "tbody button", function () {
 		if (JsonWebApi.active)
 			return;
 
 		trClicada = this.parentNode.parentNode;
-		questao = tabela.row(trClicada).data();
+		questao = JSON.parse(trClicada.getAttribute("data-questao"));
 
 		if (this.getAttribute("data-excluir")) {
 			Swal.okcancel("Tem certeza que deseja excluir esta questão?").then((result) => {
 				if (result.isConfirmed)
-					tabela.row(trClicada).remove().draw();
+					$(trClicada).remove();
 			});
 		} else if (this.getAttribute("data-editar")) {
 			criarModal();
@@ -573,7 +606,7 @@
 			$("#iddepartamento").val(getMultiselectSelection("#iddepartamentoselect").join(","));
 			$("#idpublicosalvos").val(getMultiselectSelection("#idpublicoalvoselect").join(","));
 			$("#hiddentextointroducao").val(CKEDITOR.instances.textointroducao.getData());
-			$("#questoes").val(JSON.stringify(tabela.rows().data().toArray()));
+			$("#questoes").val("[" + $("#tabelaQuestoesBody").find("tr").map(function() { return $(this).attr("data-questao"); }).get().join(",") + "]");
 
 			//<% if (item) { %>
 
