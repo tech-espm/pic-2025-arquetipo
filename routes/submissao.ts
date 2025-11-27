@@ -32,7 +32,7 @@ class SubmissaoRoute {
 
         let paraFuncionarios: boolean = false;
         let paraAlunos: boolean = false;
-        let paraTodos: boolean = false;
+        let paraExternos: boolean = false;
 
         if (questionario.idpublicosalvos) {
             for (let index = 0; index < questionario.idpublicosalvos.length; index++) {
@@ -43,13 +43,13 @@ class SubmissaoRoute {
                 } else if (publicoalvo === Publico.Funcionario) {
                     paraFuncionarios = true;
                 } else if (publicoalvo === Publico.Externo) {
-                    paraTodos = true;
+                    paraExternos = true;
                 }
             }
         }
 
         const loginESPM = paraAlunos || paraFuncionarios;
-        const cadastroExterno = paraTodos;
+        const cadastroExterno = paraExternos;
 
         let dadosToken: { nome: string, email: string, aluno: boolean } = null;
         let erroToken: string = null;
@@ -78,10 +78,10 @@ class SubmissaoRoute {
         if (dadosToken) {
             if (paraAlunos && !paraFuncionarios && !cadastroExterno) {
                 if (!dadosToken.aluno)
-                    erroToken = "Somente alunos podem responder esse questionário";
+                    erroToken = "Esse questionário é exclusivo para alunos.";
             } else if (paraFuncionarios && !paraAlunos && !cadastroExterno) {
                 if (dadosToken.aluno)
-                    erroToken = "Somente funcionários podem responder esse questionário";
+                    erroToken = "Esse questionário é exclusivo para funcionários.";
             }
         }
 
@@ -91,6 +91,7 @@ class SubmissaoRoute {
                 layout: "layout-externo",
                 mensagem: null,
                 ssoRedir: urlCallback,
+				item: questionario,
                 titulo: questionario.nomeexterno
             });
             return;
@@ -101,6 +102,7 @@ class SubmissaoRoute {
                 layout: "layout-externo",
                 mensagem: erroToken,
                 ssoRedir: urlCallback,
+				item: questionario,
                 titulo: questionario.nomeexterno
             });
             return;

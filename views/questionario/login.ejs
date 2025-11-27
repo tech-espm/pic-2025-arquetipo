@@ -8,10 +8,10 @@
 			<h1 class="h3 mb-4 text-center"> Autenticação </h1>
 			<div class="user">
 				<% if (mensagem) { %>
-				<div class="alert alert-danger"><%= mensagem %></div>
+				<div class="alert alert-danger text-center"><%= mensagem %></div>
 				<% } %>
 				<a href="<%- ssoRedir %>" class="btn btn-primary btn-user btn-block">
-					Autenticar-se
+					Clique aqui para autenticar-se e prosseguir para o questionário "<%= item.nomeexterno %>"
 				</a>
 			<hr/>
 			<div class="text-center">
