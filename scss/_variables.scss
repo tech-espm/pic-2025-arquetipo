@@ -24,7 +24,7 @@ $red: #e74a3b !default;
 $red-dark: #a80532 !default;
 $orange: #ff7a27 !default;
 $yellow: #f5b41e !default;
-$green: #1cc88a !default;
+$green: #009900 !default; // Original #1cc88a !default;
 $teal: #20c9a6 !default;
 $cyan: #36b9cc !default;
 
@@ -50,6 +50,10 @@ $link-hover-decoration: none !default;
 
 // Set Contrast Threshold
 $yiq-contrasted-threshold: 195 !default;
+$yiq-text-dark: $black !default;
+$yiq-text-light: $white !default;
+
+$input-color: $gray-800 !default;
 
 // Typography
 // $body-color: $gray-600 !default;

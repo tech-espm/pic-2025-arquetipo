@@ -76,6 +76,37 @@
   $g: green($color);
   $b: blue($color);
 
+  $RsRGB: math.div($r, 255.0);
+  $GsRGB: math.div($g, 255.0);
+  $BsRGB: math.div($b, 255.0);
+
+  @if ($RsRGB <= 0.03928) {
+    $RsRGB: math.div($RsRGB, 12.92);
+  } @else {
+    $RsRGB: math.pow(math.div($RsRGB + 0.055, 1.055), 2.4);
+  }
+
+  @if ($GsRGB <= 0.03928) {
+    $GsRGB: math.div($GsRGB, 12.92);
+  } @else {
+    $GsRGB: math.pow(math.div($GsRGB + 0.055, 1.055), 2.4);
+  }
+
+  @if ($BsRGB <= 0.03928) {
+    $BsRGB: math.div($BsRGB, 12.92);
+  } @else {
+    $BsRGB: math.pow(math.div($BsRGB + 0.055, 1.055), 2.4);
+  }
+
+  $relativeLuminance: (0.2126 * $RsRGB) + (0.7152 * $GsRGB) + (0.0722 * $BsRGB);
+
+  @if ($relativeLuminance < 0.4) {
+    @return $light;
+  } @else {
+    @return $dark;
+  }
+
+  /*
   $yiq: math.div(($r * 299) + ($g * 587) + ($b * 114), 1000);
 
   @if ($yiq >= $yiq-contrasted-threshold) {
@@ -83,6 +114,7 @@
   } @else {
     @return $light;
   }
+  */
 }
 
 // Retrieve color Sass maps
