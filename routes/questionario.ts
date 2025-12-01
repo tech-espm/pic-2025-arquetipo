@@ -7,6 +7,7 @@ import disponibilidades = require("../models/disponibilidade");
 import publicos = require("../models/publico");
 import Questionario = require("../models/questionario");
 import Perfil = require("../enums/perfil");
+import Submissao = require("../models/submissao");
 
 class QuestionarioRoute {
 	public static async criar(req: app.Request, res: app.Response) {
@@ -79,6 +80,42 @@ class QuestionarioRoute {
 			});
 	}
 
+	public static async relatorio(req: app.Request, res: app.Response) {
+		let u = await Usuario.cookie(req);
+		if (!u)
+			res.redirect(app.root + "/acesso");
+
+		let id = parseInt(req.query["id"] as string);
+
+		if (isNaN(id)) {
+            res.status(404).json({ erro: "Questionário não encontrado." });
+            return;
+		}
+
+		let questionario = await Questionario.obter(id, u.id, u.idperfil);
+        if (!questionario) {
+			res.render("index/nao-encontrado", {
+				layout: "layout-sem-form",
+				usuario: u
+			});
+			return;
+		}
+
+		let respostas = await Submissao.obterPorQuestionario(id, u.id);
+		if (typeof respostas === "string") {
+			res.status(403).json({ erro: respostas });
+			return;
+		}
+        
+		res.render("questionario/relatorio", {
+			layout: "layout-sem-form",
+			titulo: "Relatório do Questionário",
+			usuario: u,
+            questionario: questionario,
+			respostas: respostas
+		});
+		
+	}
 
 }
 

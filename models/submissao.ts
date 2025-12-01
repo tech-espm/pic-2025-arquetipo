@@ -78,11 +78,17 @@ class Submissao {
         return Number(arquetipoId);
     }
 
-    public static async obterPorQuestionario(idquestionario: number): Promise<Submissao[]> {
+    public static async obterPorQuestionario(idquestionario: number, idusuario: number): Promise<Submissao[]|String> {
         let lista: Submissao[] = [];
 
         await app.sql.connect(async (sql) => {
-            lista = await sql.query(`Select idpublicoalvo, nome, telefone, email, resposta from submissao where idquestionario = ? order by id desc`, [idquestionario]);
+
+            let departamentos = ((await sql.query("select qd.iddepartamento from questionario_departamento qd inner join usuario_departamento ud on qd.iddepartamento = ud.iddepartamento where idquestionario = ? and idusuario = ?", [idquestionario, idusuario])) as any[]).map((d) => d.iddepartamento);
+            if (departamentos.length <= 0) {
+                return "O usuário não tem acesso.";
+            }
+
+            lista = await sql.query(`Select p.nome as publico, s.nome, s.telefone, s.email, s.resposta from submissao s inner join publico p on s.idpublicoalvo = p.idpublicoalvo where idquestionario = ? order by id desc`, [idquestionario]);
         });
         return lista || [];
     }
