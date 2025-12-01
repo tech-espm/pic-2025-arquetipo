@@ -85,18 +85,6 @@ class SubmissaoRoute {
             }
         }
 
-		// login direcionando o usuario a logar e voltar com urlCallback trazendo o token
-        if (loginESPM && !cadastroExterno && !token) {
-            res.render("questionario/login", {
-                layout: "layout-externo",
-                mensagem: null,
-                ssoRedir: urlCallback,
-				item: questionario,
-                titulo: questionario.nomeexterno
-            });
-            return;
-        }
-
         if (erroToken) {
             res.render("questionario/login", {
                 layout: "layout-externo",
