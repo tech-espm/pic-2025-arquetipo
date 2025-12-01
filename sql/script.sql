@@ -166,7 +166,9 @@ CREATE TABLE questionario_arquetipo (
 CREATE TABLE submissao (
   id INT NOT NULL AUTO_INCREMENT,
   idquestionario INT NOT NULL,
+  idarquetipo INT NOT NULL,
   idpublicoalvo INT NOT NULL,
+  data datetime NOT NULL,
   nome VARCHAR(255),
   telefone VARCHAR(15),
   email VARCHAR(255),

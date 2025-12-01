@@ -10,17 +10,7 @@ class SubmissaoApiRoute {
 	@app.http.post()
 	public static async criarOuEditar(req: app.Request, res: app.Response) {
 
-		const submissao: Submissao = {
-			id: null,
-			idquestionario: req.body.idquestionario,
-			nome: req.body.nome,
-			telefone: req.body.telefone,
-			email: req.body.email,
-			idpublicoalvo: req.body.telefone ? (req.body.aluno ? Publico.Aluno : Publico.Funcionario) : Publico.Externo,
-			resposta: req.body.resposta
-		};
-
-		const arquetipoId = await Submissao.criar(submissao);
+		const arquetipoId = await Submissao.criar(req.body);
 
 		if (typeof arquetipoId === "string") {
 			res.status(400).json(arquetipoId);

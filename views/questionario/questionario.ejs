@@ -47,11 +47,10 @@
     width: 100%;
     padding: 1rem 1.25rem;
     margin-bottom: 0.75rem;
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    border: 1px solid var(--cor-texto-card);
     border-radius: 0.5rem;
     background-color: var(--cor-fundo-card);
     color: var(--cor-texto-card);
-    border-color: var(--cor-texto-card);
     border-width: 3px;
     text-align: center;
     cursor: pointer;
@@ -60,19 +59,25 @@
   }
 
   .alternativa-card:hover {
-    background-color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.5);
+    background-color: var(--cor-texto-card);
+    color: var(--cor-fundo-card);
   }
 
   .alternativa-card.selecionada {
     color: var(--cor-texto-destaque);
+    background-color: var(--cor-destaque);
     font-weight: bolder;
-    border-color: var(--cor-destaque);
+    border-color: var(--cor-texto-destaque);
+  }
+
+  .alternativa-card.selecionada:hover {
+    color: var(--cor-destaque);
+    background-color: var(--cor-texto-destaque);
   }
 
   .btn-navegacao-avancar {
     background-color: var(--cor-destaque);
-    color: var(--cor-fundo-card);
+    color: var(--cor-texto-destaque);
     font-weight: bolder;
   }
 
@@ -82,10 +87,21 @@
     font-weight: bolder;
   }
 
-  .cor-texto-introducao {
-    color: white;
+  .card {
+    border: 0 none transparent;
   }
 
+  .card-body {
+    background-color: var(--cor-fundo-card);
+    color: var(--cor-texto-card);
+  }
+
+  .btn-primary, .btn-primary:focus, .btn-primary:hover, .btn-primary:active {
+    background-color: var(--cor-destaque);
+    color: var(--cor-texto-destaque);
+    border: 1px solid var(--cor-texto-destaque);
+    box-shadow: none;
+  }
 </style>
   
   
@@ -95,14 +111,18 @@
       <div class="container">
         <div class="row justify-content-center align-items-center vh-100">
           <div class="col-12 col-md-8 col-lg-6 text-center">
-            <div class="cor-texto-introducao"><%- item.textointroducao %></div>
-            
-            <% if (loginESPM && !loginExterno && !dadosToken) { %>
-              <a href="<%- urlCallback %>" class="btn btn-primary btn-lg mt-3">COMEÇAR</a>
-            <% } else { %>
-              <button class="btn btn-primary btn-lg mt-3" onclick="questionario.avancar()">COMEÇAR</button>
-            <% } %>
+            <div class="card shadow">
+              <div class="card-body text-center">
+                <%- item.textointroducao %>
 
+                <% if (loginESPM && !loginExterno && !dadosToken) { %>
+                  <a href="<%- urlCallback %>" class="btn btn-primary btn-lg mt-3">Começar</a>
+                <% } else { %>
+                  <button class="btn btn-primary btn-lg mt-3" onclick="questionario.avancar()">Começar</button>
+                <% } %>
+
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -114,25 +134,26 @@
       <div class="container">
         <div class="row justify-content-center align-items-center vh-100">
           <div class="col-12 col-md-8 col-lg-6 text-center">
-         
-            <div class="cor-texto-introducao"> Você é <strong>aluno</strong> ou <strong>funcionário</strong> da ESPM?</div>
-            <a class="btn btn-primary btn-lg mt-3" href="<%- urlCallback %>">Sim, sou da ESPM</a>
-            <button class="btn btn-primary btn-lg mt-3" onclick="questionario.avancar()">Não, sou visitante</button>
+            <div class="card shadow">
+              <div class="card-body text-center">
+                <div class="cor-texto-introducao"> Você é <strong>aluno</strong> ou <strong>funcionário</strong> da ESPM?</div>
+                <a class="btn btn-primary btn-lg mt-3" href="<%- urlCallback %>">Sim, sou da ESPM</a>
+                <button class="btn btn-primary btn-lg mt-3" onclick="questionario.avancar()">Não, sou visitante</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
     <% } %>
-  
 
-    <% if (loginExterno && !dadosToken) { %>
-  
-   
+    <% if (loginExterno && !dadosToken && !item.anonimo) { %>
+
     <div class="tela" id="cadastro" data-background="<%- staticRoot %>/img/questionario/introducao/<%- (item && item.id) %>.jpg?v=<%- (item && item.versaointroducao) %>">
       <div class="container-fluid">
         <div class="row justify-content-center">
           <div class="col-md-8 col-lg-6 d-flex flex-column justify-content-center">
-            <div class="card o-hidden border-0 shadow-lg my-5">
+            <div class="card o-hidden shadow my-5">
               <div class="card-body p-0">
                 
                 <div class="row justify-content-center align-items-center">
@@ -146,11 +167,11 @@
 
                  
                         <div class="form-group">
-                          <input type="text" class="form-control" id="nome" name="nome" placeholder="Nome" required>
+                          <input type="text" class="form-control" id="nome" name="nome" placeholder="Nome" maxlength="255" required>
                         </div>
                         <div class="form-group">
            
-                          <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
+                          <input type="email" class="form-control" id="email" name="email" placeholder="Email" maxlength="255" required>
                         </div>
                         <div class="form-group">
                           <input type="tel" class="form-control" id="telefone" name="telefone" placeholder="Telefone" required>
@@ -178,6 +199,7 @@
         <input type="text" id="nome" name="nome" value="<%- dadosToken.nome %>">
         <input type="email" id="email" name="email" value="<%- dadosToken.email %>">
         <input type="text" id="aluno" name="aluno" value="<%- dadosToken.aluno %>">
+        <input type="hidden" id="hash" name="hash" value="<%- dadosToken.hash %>">
         <input type="tel" id="telefone" name="telefone" value="">
       </form>
     </div>
@@ -197,18 +219,18 @@
                 <p class="lead fs-5 mt-2 mb-4"><%- questao.enunciado %></p>
 
                 <div class="alternativas-container" id="alternativas-q-<%- questao.id %>">
-                  <% questao.alternativas.forEach((alt) => { %>
+                  <% for (let i = 0; i < questao.alternativas.length; i++) { let alt = questao.alternativas[i]; %>
       
                     <div class="form-check-alternativa">
-                    <input class="form-check-input d-none q-<%- questao.id %>" type="radio" name="questao-<%- questao.id %>" id="<%- questao.id + '-' + alt.arquetipoid %>" value="<%- alt.arquetipoid %>" onchange="questionario.registrarResposta('<%- questao.id %>', '<%- alt.arquetipoid %>')" <%- (resposta && resposta[questao.id] == alt.arquetipoid) ?
+                    <input class="form-check-input d-none q-<%- questao.id %>" type="radio" name="questao-<%- questao.id %>" id="<%- questao.id + '-' + alt.arquetipoid + '-' + i %>" value="<%- alt.arquetipoid %>" onchange="questionario.registrarResposta('<%- questao.id %>', '<%- alt.arquetipoid %>', '<%- i %>')" <%- (resposta && resposta[questao.id] == alt.arquetipoid) ?
                     'checked' : '' %>>
 
-                    <label class="form-check-label alternativa-card <%- (resposta && resposta[questao.id] == alt.arquetipoid) ? 'selecionada' : '' %>" for="<%- questao.id + '-' + alt.arquetipoid %>">
+                    <label class="form-check-label alternativa-card <%- (resposta && resposta[questao.id] == alt.arquetipoid) ? 'selecionada' : '' %>" for="<%- questao.id + '-' + alt.arquetipoid + '-' + i %>">
                       <%- alt.texto %>
                     </label>
              
                   </div>
-                  <% }) %>
+                  <% } %>
                 </div>
                 <div class="row" style="margin: 1.5rem -1.25rem 0;">
                   <div class="col-6 btn btn-navegacao-voltar border-0 rounded-0 p-3" onclick="questionario.voltar()">
@@ -269,6 +291,9 @@
 <script>
   //<![CDATA[
   "use strict";
+
+  maskMobilePhone("#telefone");
+
   class Questionario {
     constructor(selector) {
       this.telas = document.querySelectorAll(selector);
@@ -324,10 +349,10 @@
       if (this.telaAtual > 0) this.mostrarTela(this.telaAtual - 1);
     }
 
-    registrarResposta(questaoId, alternativaId) {
+    registrarResposta(questaoId, alternativaId, i) {
       this.resposta[questaoId] = alternativaId;
 
-      const idInput = `${questaoId}-${alternativaId}`;
+      const idInput = `${questaoId}-${alternativaId}-${i}`;
       const input = document.getElementById(idInput);
 
       const containerAlternativas = document.getElementById(`alternativas-q-${questaoId}`);
@@ -390,9 +415,11 @@
       let req = {
         resposta : this.resposta,
         idquestionario: <%- item.id %>,
-        nome: document.getElementById("nome").value,
-        email: document.getElementById("email").value,
-        telefone: document.getElementById("telefone").value || null, 
+        idpublicoalvo: "<%- idpublicoalvo %>",
+        nome: $("#nome").val() || null,
+        email: $("#email").val() || null,
+        telefone: $("#telefone").val() || null, 
+        hash: $("#hash").val() || null, 
         aluno: $("#aluno").val() == "true" ? true : false,
         externo: this.externo
       };

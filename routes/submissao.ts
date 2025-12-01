@@ -3,6 +3,8 @@ import Questionario = require("../models/questionario");
 import Disponibilidade = require("../enums/disponibilidade");
 import Publico = require("../enums/publico");
 import appsettings = require("../appsettings");
+import GeradorHash = require("../utils/geradorHash");
+import Submissao = require("../models/submissao");
 
 
 class SubmissaoRoute {
@@ -75,7 +77,9 @@ class SubmissaoRoute {
             }
         }
 
-        if (dadosToken) {
+		let idpublicoalvo = Publico.Externo;
+
+		if (dadosToken) {
             if (paraAlunos && !paraFuncionarios && !cadastroExterno) {
                 if (!dadosToken.aluno)
                     erroToken = "Esse questionário é exclusivo para alunos.";
@@ -83,6 +87,8 @@ class SubmissaoRoute {
                 if (dadosToken.aluno)
                     erroToken = "Esse questionário é exclusivo para funcionários.";
             }
+			idpublicoalvo = (dadosToken.aluno ? Publico.Aluno : Publico.Funcionario);
+			(dadosToken as any).hash = Submissao.criarHash(dadosToken.nome, dadosToken.email, dadosToken.aluno);
         }
 
         if (erroToken) {
@@ -101,6 +107,7 @@ class SubmissaoRoute {
             titulo: questionario.nomeexterno,
             item: questionario,
 
+			idpublicoalvo: idpublicoalvo,
             dadosToken: dadosToken,
             resposta : {},
 

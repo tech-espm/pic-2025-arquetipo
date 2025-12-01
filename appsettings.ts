@@ -28,5 +28,6 @@ export = {
 	usuarioHashId: parseInt(process.env.app_usuarioHashId as string),
 	ssoRedirBase: process.env.app_ssoRedirBase as string,
 	ssoRedir: process.env.app_ssoRedir as string,
-	ssoToken: process.env.app_ssoToken as string
+	ssoToken: process.env.app_ssoToken as string,
+	chaveToken: process.env.app_chaveToken as string,
 };
