@@ -68,6 +68,10 @@ class Submissao {
             });
 
         } catch (e) {
+            if (e.toString().indexOf("submissao.submissao_email_UN") >= 0){
+                return "Email já utilizado para essa pesquisa.";
+            }
+
             return "Erro ao salvar submissão: " + (e);
         }
 
