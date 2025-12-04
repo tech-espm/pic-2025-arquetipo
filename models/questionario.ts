@@ -121,7 +121,6 @@ class Questionario {
 		if (!questionario.iddisponibilidade || isNaN(parseInt(questionario.iddisponibilidade as any)))
 			return "Disponibilidade inválida";
 
-		// Validação dos relacionamentos - obg gpt
 		const relacionamentos = {
 			iddepartamento: "Departamento inválido",
 			idpublicosalvos: "Público-alvo inválido",

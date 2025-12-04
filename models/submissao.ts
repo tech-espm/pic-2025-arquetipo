@@ -28,14 +28,15 @@ class Submissao {
 			return null;
 		return GeradorHash.sha256(nome.normalize().trim() + "|" + email.normalize().trim().toLowerCase() + "|" + (aluno ? 1 : 0) + "|" + appsettings.chaveToken);
 	}
-
+    
 	public static validar(questionario: Questionario, s: Submissao): string | null {
         if (!s)
             return "Submissão inválida";
-
-        if (!(s.idpublicoalvo = parseInt(s.idpublicoalvo as any)) || !(s.idpublicoalvo === Publico.Aluno || s.idpublicoalvo === Publico.Funcionario || s.idpublicoalvo === Publico.Externo))
-            return "Público alvo inválido";
-
+        
+        if (!(s.idpublicoalvo = parseInt(s.idpublicoalvo as any)) || !(questionario.idpublicosalvos as number[]).includes(s.idpublicoalvo)){
+            return "Público inválido";
+        }
+        
 		if (questionario.anonimo) {
 			s.email = null;
 			s.nome = null;
@@ -57,7 +58,9 @@ class Submissao {
 				if (!hash || !s.hash || hash !== s.hash)
 					return "Chave de segurança inválida";
 			}
+
 		}
+
 
 		if (!s.resposta) 
             return "Resposta obrigatória";
@@ -85,6 +88,8 @@ class Submissao {
 		if (erro)
             return erro;
 
+        
+
         const counts: Record<string, number> = {};
         for (const key in s.resposta) {
             const id = s.resposta[key] as number; 
@@ -100,6 +105,9 @@ class Submissao {
         } catch (e) {
             if (e.toString().indexOf("submissao.submissao_email_UN") >= 0){
                 return "Email já utilizado para essa pesquisa.";
+            }
+            if (e.toString().indexOf("submissao.fk_submissao_validacao_publico") >= 0){
+                return "Público inválido.";
             }
 
             return "Erro ao salvar submissão: " + (e);
