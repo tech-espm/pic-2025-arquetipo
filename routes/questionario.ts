@@ -8,6 +8,7 @@ import publicos = require("../models/publico");
 import Questionario = require("../models/questionario");
 import Perfil = require("../enums/perfil");
 import Submissao = require("../models/submissao");
+import DataUtil = require("../utils/dataUtil");
 
 class QuestionarioRoute {
 	public static async criar(req: app.Request, res: app.Response) {
@@ -85,34 +86,21 @@ class QuestionarioRoute {
 		if (!u)
 			res.redirect(app.root + "/acesso");
 
-		let id = parseInt(req.query["id"] as string);
+		let idquestionario = parseInt(req.query["id"] as string);
 
-		if (isNaN(id)) {
-            res.status(404).json({ erro: "Questionário não encontrado." });
-            return;
-		}
+		const hoje = DataUtil.horarioDeBrasiliaISO();
 
-		let questionario = await Questionario.obter(id, u.id, u.idperfil);
-        if (!questionario) {
-			res.render("index/nao-encontrado", {
-				layout: "layout-sem-form",
-				usuario: u
-			});
-			return;
-		}
-
-		let respostas = await Submissao.obterPorQuestionario(id, u.id);
-		if (typeof respostas === "string") {
-			res.status(403).json({ erro: respostas });
-			return;
-		}
-        
 		res.render("questionario/relatorio", {
-			layout: "layout-sem-form",
+			layout: "layout-tabela",
 			titulo: "Relatório do Questionário",
+			datatables: true,
+			xlsx: true,
+			chart: true,
 			usuario: u,
-            questionario: questionario,
-			respostas: respostas
+			questionarios: await Questionario.listarCombo(u.id, u.idperfil),
+            idquestionario: idquestionario || 0,
+			data_inicial: DataUtil.adicionarDiasISO(hoje, -30),
+			data_final: hoje,
 		});
 		
 	}

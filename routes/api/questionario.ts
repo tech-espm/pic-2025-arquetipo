@@ -3,6 +3,7 @@ import Usuario = require("../../models/usuario");
 import Questionario = require("../../models/questionario");
 import { parse } from "path";
 import Arquetipo = require("../../models/arquetipo");
+import Submissao = require("../../models/submissao");
 
 class QuestionarioApiRoute {
 	@app.http.get()
@@ -118,6 +119,18 @@ public static async editar(req: app.Request, res: app.Response) {
 		res.sendStatus(204);
 	}
 
+	@app.http.get()
+	public static async relatorio(req: app.Request, res: app.Response) {
+		const u = await Usuario.cookie(req, res);
+		if (!u)
+			return;
+
+		const r = await Submissao.obterPorQuestionario(u.id, u.idperfil, parseInt(req.query["idquestionario"] as string) || 0, req.query["data_inicial"] as string, req.query["data_final"] as string);
+		if (typeof r === "string")
+			res.status(400);
+
+		res.json(r);
+	}
 }
 
 export = QuestionarioApiRoute;

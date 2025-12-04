@@ -67,3 +67,9 @@
 <script type="text/javascript" src="<%- staticRoot %>/lib/bootstrap-datepicker-1.9.0/js/bootstrap-datepicker.min.js"></script>
 <script type="text/javascript" src="<%- staticRoot %>/lib/bootstrap-datepicker-1.9.0/locales/bootstrap-datepicker.pt-BR.min.js"></script>
 <% } %>
+
+<% if (typeof chart !== "undefined" && chart) { %>
+<script type="text/javascript" charset="utf-8" src="<%- staticRoot %>/lib/chart.js/chart.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="<%- staticRoot %>/lib/chart.js/chartjs-plugin-datalabels/chartjs-plugin-datalabels.js"></script>     
+<% } %>
+	

@@ -116,25 +116,58 @@ class Submissao {
         return Number(arquetipoId);
     }
 
-    public static async obterPorQuestionario(idquestionario: number, idusuario: number): Promise<Submissao[]|String> {
-        let lista: Submissao[] = [];
+    public static async obterPorQuestionario(idusuario: number, idperfil: Perfil, idquestionario: number, data_inicial: string | null, data_final: string | null): Promise<string | any> {
+        if (!idquestionario)
+			return "Questionário inválido";
 
-        try{
-            await app.sql.connect(async (sql) => {
+		if (!(data_inicial = DataUtil.converterDataISO(data_inicial)))
+			return "Data inicial inválida";
 
-            let departamentos = ((await sql.query("select qd.iddepartamento from questionario_departamento qd inner join usuario_departamento ud on qd.iddepartamento = ud.iddepartamento where idquestionario = ? and idusuario = ?", [idquestionario, idusuario])) as any[]).map((d) => d.iddepartamento);
-            if (departamentos.length <= 0) {
-                return "O usuário não tem acesso.";
-            }
+		if (!(data_final = DataUtil.converterDataISO(data_final)))
+			return "Data final inválida";
 
-            lista = await sql.query(`Select p.nome as publico, s.nome, s.telefone, s.email, s.resposta from submissao s inner join publico p on s.idpublicoalvo = p.id where idquestionario = ? order by s.id desc;`, [idquestionario]);
-        });
-        }
-        catch(e){
-            return "Erro ao obter submissões: " + (e);
-        }
-        
-        return lista;
+		if (data_inicial > data_final)
+			return "Data inicial não pode ser maior que a data final";
+
+		data_inicial += " 00:00:00";
+		data_final += " 23:59:59";
+
+		const questionario = await Questionario.obter(idquestionario, idusuario, idperfil);
+		if (!questionario)
+			return "Questionário não encontrado";
+
+		return await app.sql.connect(async (sql) => {
+            const submissoes: any[] = await sql.query(`select p.nome publico, s.nome, s.telefone, s.email, a.nome arquetipo, date_format(s.data, '%d/%m/%Y %H:%i') data, s.resposta from submissao s inner join publico p on s.idpublicoalvo = p.id left join arquetipo a on a.id = s.idarquetipo where idquestionario = ? and s.data between ? and ?`, [idquestionario, data_inicial, data_final]);
+
+			const questoes: any[] = questionario.questoes as any;
+
+			for (let i = 0; i < submissoes.length; i++) {
+				const submissao = submissoes[i];
+				const respostas = submissao.resposta;
+				delete submissao.resposta;
+
+				for (let j = 0; j < questoes.length; j++) {
+					const questao = questoes[j];
+					const alternativas = questao.alternativas;
+
+					submissao["q" + j] = null;
+
+					for (let k = 0; k < alternativas.length; k++) {
+						const alternativa = alternativas[k];
+						if (respostas[questao.id] == alternativa.arquetipoid) {
+							submissao["q" + j] = alternativa.texto;
+							break;
+						}
+					}
+				}
+			}
+
+			return {
+				arquetipos: (await sql.query("select a.nome from questionario_arquetipo qa inner join arquetipo a on a.id = qa.idarquetipo where qa.idquestionario = ?", [idquestionario])) as any[],
+				submissoes,
+				questoes,
+			};
+		});
     }
 }
 

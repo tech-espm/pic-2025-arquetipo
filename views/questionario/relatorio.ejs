@@ -1,98 +1,231 @@
-<div class="row">
-    <div class="col-12">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary">Submissões: <%- questionario.nome %></h6>
-            </div>
-            <div class="card-body">
-                <table class="table table-flush table-striped table-hover" id="tabela"></table>
-            </div>
-        </div>
-    </div>
+<div id="tabelaContainer">
+	<div class="text-center">
+		Nada para exibir
+	</div>
 </div>
 
+<%- contentFor("topcontent") %>
+
+<form class="card shadow mb-4" id="form">
+	<div class="card-body">
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="form-group">
+					<label for="idquestionario">Questionário</label>
+					<div class="cb-search">
+						<select class="form-control" id="idquestionario">
+							<option value="" hidden>Selecione...</option>
+							<% for (let i = 0; i < questionarios.length; i++) { %>
+							<option value="<%- questionarios[i].id %>" <%- (idquestionario == questionarios[i].id ? 'selected="selected"' : "") %>><%= questionarios[i].nome %></option>
+							<% } %> 
+						</select>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-sm-6 col-lg-3">
+				<div>
+					<label for="data_inicial">Data Inicial</label>
+					<input type="date" class="form-control" id="data_inicial" value="<%- data_inicial %>" />
+				</div>
+			</div>
+
+			<div class="col-sm-6 col-lg-3">
+				<div class="form-group">
+					<label for="data_final">Data Final</label>
+					<input type="date" class="form-control" id="data_final" value="<%- data_final %>" />
+				</div>
+			</div>
+		</div>
+
+		<div class="text-center text-md-right">
+			<button type="submit" class="btn btn-primary">Pesquisar</button>
+		</div>
+	</div>
+</form>
+
+<div class="card shadow mb-4">
+	<div class="card-body" id="divGraficoContainer">
+		<div class="text-center">
+			Nada para exibir
+		</div>
+	</div>
+</div>
+
+<%- contentFor("styles") %>
+<style type="text/css">
+</style>
+
 <%- contentFor("scripts") %>
+
 <script type="text/javascript">
-    //<![CDATA[
-    "use strict";
+	//<![CDATA[
+	"use strict";
 
-    var questoes = <%- (questionario && questionario.questoes) ? questionario.questoes : '[]' %>;
-    var submissoes = <%- JSON.stringify(respostas) %>;
+	prepareCbSearch(document.getElementById("idquestionario"));
+	
+	document.getElementById("form").onsubmit = function (e) {
+		cancelEvent(e);
+		buscarDados();
+		return false;
+	}
 
-    var tabela = prepareDataTable("tabela", {
-        order: [[1, "asc"]],
-        deferRender: true,
-        data: submissoes,
-        columns: [
-            { 
-                title: "", 
-                "class": "col-min", 
-                searchable: false, 
-                orderable: false, 
-                data: null, 
-                render: function (v, type, row) { 
-                    return '<button title="Visualizar Respostas" type="button" class="btn btn-sm btn-outline-primary" onclick="verDetalhes(this)"><i class="fa fa-fw fa-eye"></i></button>'; 
-                } 
-            },
-            { title: "Nome", render: encode, data: "nome" },
-            { title: "Público", render: encode, data: "publico" }, // Requer o alias no SQL
-            { title: "E-mail", render: encode, data: "email" },
-            { title: "Telefone", render: encode, data: "telefone" }
-        ],
-        export: { xlsx: true, title: "Relatório - <%- questionario.nome %>" }
-    });
+	function buscarDados() {
+		let idquestionario = parseInt($("#idquestionario").val()) || 0,
+			data_inicial = $("#data_inicial").val(),
+			data_final = $("#data_final").val();
 
-    function verDetalhes(btn) {
-        var tr = btn.parentNode.parentNode;
-        var row = tabela.row(tr).data();
-        
-        if (!row || !row.resposta) return;
+		if (!idquestionario || !data_inicial || !data_final) {
+			Swal.error("Preencha todos os campos para gerar o relatório " + emoji.sad);
+			return;
+		}
 
-        var respostasObj = {};
-        try {
-            respostasObj = JSON.parse(row.resposta);
-        } catch (e) {
-            respostasObj = {};
-        }
+		Swal.wait();
+		JsonWebApi.get("<%- root %>/api/questionario/relatorio", function (response) {
+			if (response.success) {
+				Swal.close();
+				atualizarTabela(response.value);
+			} else {
+				Swal.error(response.value + " " + emoji.sad);
+			}
+		}, "idquestionario", idquestionario, "data_inicial", data_inicial, "data_final", data_final);
+	}
 
-        let htmlDetalhes = '<div class="text-left" style="max-height: 60vh; overflow-y: auto;">';
+	let tabelaConsolidada = null;
+	let tabelaDetalhada = null;
 
-        questoes.forEach(q => {
-            let respostaId = respostasObj[q.id];
-            let respostaTexto = '<span class="text-muted font-italic">Não respondido</span>';
+	function atualizarTabela(dados) {
+		$("#tabelaContainer").html(`
+			<table class="table table-flush table-striped table-hover" id="tabelaConsolidada"></table>
+			<hr class="my-5"/>
+			<table class="table table-flush table-striped table-hover" id="tabelaDetalhada"></table>
+		`);
 
-            if (respostaId) {
-                let alternativa = q.alternativas.find(a => a.arquetipoid == respostaId);
-                if (alternativa) {
-                    respostaTexto = `<span class="text-success font-weight-bold">${alternativa.texto}</span>`;
-                } else {
-                    respostaTexto = respostaId;
-                }
-            }
+		const totaisPorArquetipo = new Map();
 
-            htmlDetalhes += `
-                <div class="mb-3 border-bottom pb-2">
-                    <div class="font-weight-bold text-dark mb-1">${q.titulo || 'Questão'}</div>
-                    <small class="d-block mb-1 text-secondary">${q.enunciado}</small>
-                    <div>${respostaTexto}</div>
-                </div>
-            `;
-        });
+		for (let i = dados.arquetipos.length - 1; i >= 0; i--)
+			totaisPorArquetipo.set(dados.arquetipos[i].nome, 0);
 
-        htmlDetalhes += '</div>';
+		for (let i = dados.submissoes.length - 1; i >= 0; i--) {
+			const arquetipo = dados.submissoes[i].arquetipo;
+			totaisPorArquetipo.set(arquetipo, (totaisPorArquetipo.get(arquetipo) || 0) + 1);
+		}
 
-        Swal.fire({
-            title: `Respostas de ${row.nome}`,
-            html: htmlDetalhes,
-            width: '600px',
-            showCloseButton: true,
-            showConfirmButton: false,
-            focusConfirm: false
-        });
-    }
+		const consolidado = [];
 
+		for (let par of totaisPorArquetipo) {
+			consolidado.push({
+				arquetipo: par[0],
+				total: par[1],
+			});
+		}
+		consolidado.sort((a, b) => ((b.total - a.total) || (a.arquetipo.localeCompare(b.arquetipo))));
 
-    tabela()
+		tabelaConsolidada = prepareDataTable("tabelaConsolidada", {
+			order: [[0, "asc"]],
+			deferRender: true,
+			removeAll: true,
+			columns: [
+				{ title: "Arquétipo", data: "arquetipo" },
+				{ title: "Total de Submissões", type: "num", data: "total" },
+			],
+			data: consolidado || [],
+			export: { xlsx: true, title: "Submissões por Arquétipo" }
+		});
 
-    //]]>
+		const divGraficoContainer = document.getElementById("divGraficoContainer");
+		divGraficoContainer.innerHTML = '<canvas id="grafico" style="height: 35vh;"></canvas>';
+
+		const labels = consolidado.map(o => o.arquetipo);
+		const data = consolidado.map(o => o.total);
+
+		const cor = "#0066ff";
+		const datasets = [{
+			label: "Submissões",
+			backgroundColor: cor,
+			hoverBackgroundColor: cor,
+			borderColor: cor,
+			data: data,
+		}];
+
+		new Chart(document.getElementById("grafico"), {
+			type: "bar",
+			data: {
+				labels: labels,
+				datasets: datasets,
+			},
+			options: {
+				maintainAspectRatio: false,
+				layout: {
+					padding: {
+						left: 10,
+						right: 25,
+						top: 25,
+						bottom: 0
+					}
+				},
+				scales: {
+					x: {
+						gridLines: {
+							display: false,
+							drawBorder: false
+						},
+						ticks: {
+							maxTicksLimit: 20
+						},
+						maxBarThickness: 50,
+					},
+					y: {
+						ticks: {
+							min: 0,
+							stepSize: 5,
+							padding: 10
+						},
+						gridLines: {
+							color: "rgb(234, 236, 244)",
+							zeroLineColor: "rgb(234, 236, 244)",
+							drawBorder: false,
+							borderDash: [2],
+							zeroLineBorderDash: [2]
+						}
+					},
+				},
+				plugins: {
+					title: {
+						display: true,
+						text: "Submissões por Arquétipo",
+						padding: {
+							top: 0,
+							bottom: 20,
+						},
+						font: {
+							size: 20,
+						},
+					},
+					legend: {
+						display: false
+					}
+				},
+				tooltips: {
+					titleMarginBottom: 10,
+					titleFontColor: '#6e707e',
+					titleFontSize: 14,
+					backgroundColor: "rgb(255,255,255)",
+					bodyFontColor: "#858796",
+					borderColor: '#dddfeb',
+					borderWidth: 1,
+					xPadding: 15,
+					yPadding: 15,
+					displayColors: false,
+					caretPadding: 10
+				},
+			}
+		});
+	}
+
+	//<% if (idquestionario) { %>
+	buscarDados();
+	//<% } %>
+
+	//]]>
 </script>

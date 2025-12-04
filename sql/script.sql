@@ -176,5 +176,6 @@ CREATE TABLE submissao (
   PRIMARY KEY (id),
   UNIQUE KEY submissao_email_UN(email, idquestionario),
   CONSTRAINT fk_qs_questionario_FK FOREIGN KEY (idquestionario) REFERENCES questionario(id) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_ps_publicoalvo FOREIGN KEY (idpublicoalvo) REFERENCES publico(id) ON DELETE RESTRICT ON UPDATE RESTRICT
+  CONSTRAINT fk_ps_publicoalvo FOREIGN KEY (idpublicoalvo) REFERENCES publico(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  KEY submissao_data_idquestionario_IX (data, idquestionario)
 );
