@@ -64,7 +64,7 @@ class SubmissaoRoute {
                 if (!respostaApi.success || !respostaApi.result) {
                     erroToken = (respostaApi.result && respostaApi.result.toString()) || ("Erro de comunicação: " + respostaApi.statusCode);
                 } else if (respostaApi.result.erro) {
-                    erroToken = respostaApi.result.erro;
+                    erroToken = ((respostaApi.result.erro == "Dados nulos para o token requisitado") ? "Efetue o login novamente para responder o questionário" : respostaApi.result.erro);
                 } else {
                     dadosToken = {
                         email: respostaApi.result.dados.email,
@@ -73,22 +73,21 @@ class SubmissaoRoute {
                     };
                 }
             } catch (e) {
-                erroToken = "Falha ao validar o login.";
+                erroToken = "Falha ao validar o login";
             }
         }
 
 		let idpublicoalvo = Publico.Externo;
 
 		if (dadosToken) {
-            if (paraAlunos && !paraFuncionarios && !cadastroExterno) {
-                if (!dadosToken.aluno)
-                    erroToken = "Esse questionário é exclusivo para alunos.";
-            } else if (paraFuncionarios && !paraAlunos && !cadastroExterno) {
-                if (dadosToken.aluno)
-                    erroToken = "Esse questionário é exclusivo para funcionários.";
-            }
-			idpublicoalvo = (dadosToken.aluno ? Publico.Aluno : Publico.Funcionario);
-			(dadosToken as any).hash = Submissao.criarHash(dadosToken.nome, dadosToken.email, dadosToken.aluno);
+            if (dadosToken.aluno && !paraAlunos) {
+                erroToken = "Esse questionário não pode ser respondido por alunos";
+			} else if (!dadosToken.aluno && !paraFuncionarios) {
+                erroToken = "Esse questionário não pode ser respondido por funcionários";
+			} else {
+				idpublicoalvo = (dadosToken.aluno ? Publico.Aluno : Publico.Funcionario);
+				(dadosToken as any).hash = Submissao.criarHash(dadosToken.nome, dadosToken.email, dadosToken.aluno);
+			}
         }
 
         if (erroToken) {

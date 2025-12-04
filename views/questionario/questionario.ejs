@@ -111,7 +111,7 @@
       <div class="container">
         <div class="row justify-content-center align-items-center vh-100">
           <div class="col-12 col-md-8 col-lg-6 text-center">
-            <div class="card shadow">
+            <div class="card shadow-lg">
               <div class="card-body text-center">
                 <%- item.textointroducao %>
 
@@ -134,7 +134,7 @@
       <div class="container">
         <div class="row justify-content-center align-items-center vh-100">
           <div class="col-12 col-md-8 col-lg-6 text-center">
-            <div class="card shadow">
+            <div class="card shadow-lg">
               <div class="card-body text-center">
                 <div class="cor-texto-introducao"> Você é <strong>aluno</strong> ou <strong>funcionário</strong> da ESPM?</div>
                 <a class="btn btn-primary btn-lg mt-3" href="<%- urlCallback %>">Sim, sou da ESPM</a>
@@ -153,7 +153,7 @@
       <div class="container-fluid">
         <div class="row justify-content-center">
           <div class="col-md-8 col-lg-6 d-flex flex-column justify-content-center">
-            <div class="card o-hidden shadow my-5">
+            <div class="card o-hidden shadow-lg my-5">
               <div class="card-body p-0">
                 
                 <div class="row justify-content-center align-items-center">
@@ -253,18 +253,17 @@
 
     <div class="tela" id="conclusao" data-background="<%- staticRoot %>/img/questionario/<%- (item && item.id) %>.jpg?v=<%- (item && item.versaoquestionario) %>">
       <div class="container-fluid">
-        <div class="row justify-content-center align-items-center min-vh-100 py-5">
+        <div class="row justify-content-center align-items-center py-5">
           <div class="col-12 col-lg-10 col-xl-9">
             
             <div class="card border-0 shadow-lg overflow-hidden" style="background-color: var(--cor-fundo-card); color: var(--cor-texto-card);">
               <div class="row no-gutters">
                 
-                <div class="col-md-5 position-relative bg-secondary">
-                  <img id="imgconclusao" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Resultado do Arquétipo" class="w-100 h-100" style="object-fit: cover; min-height: 300px; display: block;">
+                <div class="col-md-5 position-relative bg-white" id="imgconclusao" style="background-position: center center; background-size: contain; background-repeat: no-repeat; min-height: 60vh;">
                 </div>
 
                 <div class="col-md-7">
-                  <div class="card-body p-4 p-md-5 d-flex flex-column justify-content-center h-100">
+                  <div class="card-body p-4 p-md-5 d-flex flex-column justify-content-center h-100 sombra-card">
                     
                     <div id="arquetipo">
                       <div class="text-center py-5">
@@ -287,7 +286,24 @@
     </div>
 
   </div> 
-  <%- contentFor("scripts") %>
+
+<%- contentFor("styles") %>
+
+<style>
+  /*
+  .sombra-card {
+    box-shadow: 0 .25rem .25rem rgba(0,0,0,0.25) inset;
+  }
+
+  @media (min-width: 768px) {
+    .sombra-card {
+      box-shadow: .25rem 0 .25rem rgba(0,0,0,0.25) inset;
+    }
+  }
+  */
+</style>
+
+<%- contentFor("scripts") %>
 <script>
   //<![CDATA[
   "use strict";
@@ -426,10 +442,10 @@
       JsonWebApi.post("<%- root %>/api/submissao/criarOuEditar", req, (response) => {
         if (response.success) {
           const arquetipo = response.value;
-          $("#imgconclusao").attr("src", `<%- staticRoot %>/img/arquetipo/${arquetipo.id}.jpg?v=${arquetipo.versao}`);
+          document.getElementById("imgconclusao").style.backgroundImage = `url('<%- staticRoot %>/img/arquetipo/${arquetipo.id}.jpg?v=${arquetipo.versao}')`;
           $("#arquetipo").html(`<h1>${arquetipo.nome}</h1><div>${arquetipo.descricaocompleta}</div>`);
         } else {
-          $("#imgconclusao").attr("src", `<%- staticRoot %>/img/warning.png`);
+          document.getElementById("imgconclusao").style.backgroundImage = `url('<%- staticRoot %>/img/warning.png')`;
           $("#arquetipo").html(`<h1>Ops...</h1><div><h3>Aconteceu um erro e não conseguimos salvar sua resposta.</h3></div>`);
           Swal.error(response.value + " " + emoji.sad);
         }
