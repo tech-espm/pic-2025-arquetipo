@@ -1,0 +1,98 @@
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Submissões: <%- questionario.nome %></h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-flush table-striped table-hover" id="tabela"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- contentFor("scripts") %>
+<script type="text/javascript">
+    //<![CDATA[
+    "use strict";
+
+    var questoes = <%- (questionario && questionario.questoes) ? questionario.questoes : '[]' %>;
+    var submissoes = <%- JSON.stringify(respostas) %>;
+
+    var tabela = prepareDataTable("tabela", {
+        order: [[1, "asc"]],
+        deferRender: true,
+        data: submissoes,
+        columns: [
+            { 
+                title: "", 
+                "class": "col-min", 
+                searchable: false, 
+                orderable: false, 
+                data: null, 
+                render: function (v, type, row) { 
+                    return '<button title="Visualizar Respostas" type="button" class="btn btn-sm btn-outline-primary" onclick="verDetalhes(this)"><i class="fa fa-fw fa-eye"></i></button>'; 
+                } 
+            },
+            { title: "Nome", render: encode, data: "nome" },
+            { title: "Público", render: encode, data: "publico" }, // Requer o alias no SQL
+            { title: "E-mail", render: encode, data: "email" },
+            { title: "Telefone", render: encode, data: "telefone" }
+        ],
+        export: { xlsx: true, title: "Relatório - <%- questionario.nome %>" }
+    });
+
+    function verDetalhes(btn) {
+        var tr = btn.parentNode.parentNode;
+        var row = tabela.row(tr).data();
+        
+        if (!row || !row.resposta) return;
+
+        var respostasObj = {};
+        try {
+            respostasObj = JSON.parse(row.resposta);
+        } catch (e) {
+            respostasObj = {};
+        }
+
+        let htmlDetalhes = '<div class="text-left" style="max-height: 60vh; overflow-y: auto;">';
+
+        questoes.forEach(q => {
+            let respostaId = respostasObj[q.id];
+            let respostaTexto = '<span class="text-muted font-italic">Não respondido</span>';
+
+            if (respostaId) {
+                let alternativa = q.alternativas.find(a => a.arquetipoid == respostaId);
+                if (alternativa) {
+                    respostaTexto = `<span class="text-success font-weight-bold">${alternativa.texto}</span>`;
+                } else {
+                    respostaTexto = respostaId;
+                }
+            }
+
+            htmlDetalhes += `
+                <div class="mb-3 border-bottom pb-2">
+                    <div class="font-weight-bold text-dark mb-1">${q.titulo || 'Questão'}</div>
+                    <small class="d-block mb-1 text-secondary">${q.enunciado}</small>
+                    <div>${respostaTexto}</div>
+                </div>
+            `;
+        });
+
+        htmlDetalhes += '</div>';
+
+        Swal.fire({
+            title: `Respostas de ${row.nome}`,
+            html: htmlDetalhes,
+            width: '600px',
+            showCloseButton: true,
+            showConfirmButton: false,
+            focusConfirm: false
+        });
+    }
+
+
+    tabela()
+
+    //]]>
+</script>

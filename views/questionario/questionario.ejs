@@ -429,6 +429,8 @@
           $("#imgconclusao").attr("src", `<%- staticRoot %>/img/arquetipo/${arquetipo.id}.jpg?v=${arquetipo.versao}`);
           $("#arquetipo").html(`<h1>${arquetipo.nome}</h1><div>${arquetipo.descricaocompleta}</div>`);
         } else {
+          $("#imgconclusao").attr("src", `<%- staticRoot %>/img/warning.png`);
+          $("#arquetipo").html(`<h1>Ops...</h1><div><h3>Aconteceu um erro e não conseguimos salvar sua resposta.</h3></div>`);
           Swal.error(response.value + " " + emoji.sad);
         }
       });
